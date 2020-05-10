@@ -12,9 +12,7 @@ import frc.robot.Constants;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj.smartdashboard.*;
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
+
 
 /**
  * An example command that uses an example subsystem.
@@ -22,14 +20,6 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 public class FollowImageCommand extends CommandBase {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
   private final DriveSubsystem m_driveSubsystem;
-
-  private NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-  private NetworkTableEntry m_tx = table.getEntry("tx"); 
-  private NetworkTableEntry m_ty = table.getEntry("ty"); 
-  private NetworkTableEntry m_ta = table.getEntry("ta"); 
-  private NetworkTableEntry m_ledMode = table.getEntry("ledMode");
-  private NetworkTableEntry m_cameraMode = table.getEntry("camMode");
-
 
 
   /**
@@ -40,8 +30,6 @@ public class FollowImageCommand extends CommandBase {
   public FollowImageCommand(DriveSubsystem subsystem) {
 
     m_driveSubsystem = subsystem;
-    m_ledMode.setNumber(Constants.cLLLedOff);
-    m_cameraMode.setNumber(Constants.cLLCameraDriver);
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(m_driveSubsystem);
   }
@@ -49,8 +37,7 @@ public class FollowImageCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_ledMode.setNumber(Constants.cLLLedOn);
-    m_cameraMode.setNumber(Constants.cLLCameraVisionProcess);
+
   }
 
 
@@ -61,17 +48,14 @@ public class FollowImageCommand extends CommandBase {
 
       //Limelight
 
-      SmartDashboard.putNumber("tx", m_tx.getDouble(0.0));
-      SmartDashboard.putNumber("ty", m_ty.getDouble(0.0));
-      SmartDashboard.putNumber("ta", m_ta.getDouble(0.0));
+
 
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_ledMode.setNumber(Constants.cLLLedOff);
-    m_cameraMode.setNumber(Constants.cLLCameraDriver);
+
   }
 
   // Returns true when the command should end.

@@ -21,7 +21,9 @@ import frc.robot.subsystems.Pose;
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
 
-  private RobotContainer m_robotContainer;
+
+  
+   private RobotContainer m_robotContainer; // = new RobotContainer();
 
   
 
@@ -33,7 +35,9 @@ public class Robot extends TimedRobot {
   public void robotInit() {
     // Instantiate our RobotContainer.  This will perform all our button bindings, and put our
     // autonomous chooser on the dashboard.
-    m_robotContainer = new RobotContainer();
+     m_robotContainer = new RobotContainer();
+
+
   }
 
   /**
@@ -61,6 +65,7 @@ public class Robot extends TimedRobot {
 
   @Override
   public void disabledPeriodic() {
+    m_robotContainer.disablePeriodic();
   }
 
   /**
@@ -70,6 +75,7 @@ public class Robot extends TimedRobot {
   public void autonomousInit() {
     m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
+    
     // schedule the autonomous command (example)
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
@@ -92,6 +98,8 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    m_robotContainer.teleopInit();
+    
   }
 
   /**
@@ -99,6 +107,8 @@ public class Robot extends TimedRobot {
    */
   @Override
   public void teleopPeriodic() {
+    m_robotContainer.teleopPeriodic();
+ 
   }
 
   @Override

@@ -9,48 +9,47 @@ package frc.robot.commands;
 
 import frc.robot.Constants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.FeedbackSubsystem;
+import frc.robot.subsystems.Pose;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj.smartdashboard.*;
+import edu.wpi.first.wpilibj.spline.PoseWithCurvature;
 
 
 /**
  * An example command that uses an example subsystem.
  */
-public class TankDriveCommand extends CommandBase {
+public class EnableLED extends InstantCommand {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
-  private final DriveSubsystem m_driveSubsystem;
-  private final Joystick m_leftStick;
-  private final Joystick m_rightStick;
-
-
  
-  
+  private FeedbackSubsystem m_feedbackSubsystem;
+  boolean m_turnOn = false;
 
   /**
    * Creates a new ExampleCommand.
    *
    * @param subsystem The subsystem used by this command.
    */
-  public TankDriveCommand(DriveSubsystem subsystem, Joystick leftStick, Joystick rightStick) {
+  public EnableLED(FeedbackSubsystem subsystem, boolean TurnOn) {
 
-    m_driveSubsystem = subsystem;
-    m_leftStick = leftStick;
-    m_rightStick = rightStick;
-    // Use addRequirements() here to declare subsystem dependencies.
-    addRequirements(m_driveSubsystem);
+
+    m_feedbackSubsystem = subsystem;
+    m_turnOn = TurnOn;
+    addRequirements(m_feedbackSubsystem);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_driveSubsystem.tankDriveConfig();
+    
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-      m_driveSubsystem.drive(-m_leftStick.getY(),-m_rightStick.getY());
+    m_feedbackSubsystem.enableLED(m_turnOn);
   }
 
   // Called once the command ends or is interrupted.
@@ -58,9 +57,5 @@ public class TankDriveCommand extends CommandBase {
   public void end(boolean interrupted) {
   }
 
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return false;
-  }
+
 }

@@ -25,5 +25,6 @@ public class ResetGyroCommand extends InstantCommand {
   @Override
   public void initialize() {
     m_subsystem.resetGyro();
+    
   }
 }

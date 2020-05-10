@@ -15,10 +15,14 @@ import frc.robot.commands.TurnToHeadingCommand;
 import frc.robot.commands.DriveSquareCommand;
 import frc.robot.commands.DriveToDistanceCommand;
 import frc.robot.commands.FollowImageCommand;
+import frc.robot.commands.EnableLED;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.FeedbackSubsystem;
 import frc.robot.subsystems.Pose;
+import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
+
 import frc.robot.Constants;
 
 
@@ -32,6 +36,7 @@ import frc.robot.Constants;
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  private final FeedbackSubsystem m_feedbackSubsystem = new FeedbackSubsystem();
   private final Pose m_pose = new Pose();
 
  
@@ -45,14 +50,47 @@ public class RobotContainer {
   private final DriveSquareCommand m_DriveSquareCommand = new DriveSquareCommand(m_driveSubsystem);
 
   /**
-   * The container for the robot.  Contains subsystems, OI devices, and commands.
+   * The container for the robot.  Contains subsystems, OI dmevices, and commands.
    */
   public RobotContainer() {
     m_driveSubsystem.setDefaultCommand(m_tankDriveCommand);
-      // Configure the button bindings
+   // m_pose.initialize();
+    System.out.println("[RobotContainer]  creating the robot container");
     configureButtonBindings();
-
+    m_pose.enableCameraMode();
   }
+
+
+
+public void IMUInit(){
+  m_pose.IMUInit();
+}
+
+public void teleopInit()
+{
+  m_feedbackSubsystem.enableLED(true);
+  IMUInit();
+}
+
+public void teleopPeriodic(){
+
+  if (m_pose.beamBroken()) {
+    if( m_feedbackSubsystem.ledsOn()) {
+      CommandScheduler.getInstance().schedule(new EnableLED(m_feedbackSubsystem, false));
+    }
+  }
+  else {
+    if (!m_feedbackSubsystem.ledsOn()) {
+      CommandScheduler.getInstance().schedule(new EnableLED(m_feedbackSubsystem, true));
+    }
+  }
+
+}
+
+public void disablePeriodic() {
+  m_feedbackSubsystem.enableLED(false);
+}
+
 
   /**
    * Use this method to define your button->command mappings.  Buttons can be created by
