@@ -84,11 +84,9 @@ public double ta() {
 }
 
  public void enableCameraMode() {
-   System.out.println("[Pose]  enable Camera mode");
-
  // m_cameraMode.setNumber(Constants.cLLCameraDriver);
  // m_ledMode.setNumber(Constants.cLLLedOff);
-  m_pipeline.setNumber(1);
+  // m_pipeline.setNumber(1);
  }
 
 
