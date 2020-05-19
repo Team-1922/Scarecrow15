@@ -13,6 +13,9 @@ import java.lang.Math;
 
 import edu.wpi.first.wpilibj.SPI;
 import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.kauailabs.navx.frc.*;
@@ -27,14 +30,24 @@ import frc.robot.Constants;
 
 public class DriveSubsystem extends SubsystemBase {
 
-  
+  /*
   private WPI_TalonSRX m_leftMaster = new WPI_TalonSRX (Constants.cDriveLeftFront);
   private WPI_TalonSRX m_leftFollower = new WPI_TalonSRX (Constants.cDriveLeftBack);
   private WPI_TalonSRX m_rightMaster = new WPI_TalonSRX (Constants.cDriveRightFront);
   private WPI_TalonSRX m_rightFollower = new WPI_TalonSRX (Constants.cDriveRightBack);
+  */
+
+  private WPI_TalonSRX m_leftMaster = new WPI_TalonSRX (10);
+  private WPI_TalonSRX m_leftFollower = new WPI_TalonSRX (11);
+  private WPI_TalonSRX m_rightMaster = new WPI_TalonSRX (12);
+  private WPI_TalonSRX m_rightFollower = new WPI_TalonSRX (13);
 
   private AHRS m_navXMP = new AHRS(SPI.Port.kMXP);
   
+  
+  DifferentialDriveOdometry m_odometry;
+  
+
   boolean m_doOld = false;
   /**
    * Creates a new DriveSystem.
@@ -42,7 +55,10 @@ public class DriveSubsystem extends SubsystemBase {
   public DriveSubsystem() {
     super();
 
-   /*
+  	Pose2d currentPose = new Pose2d(0.0,0.0,new Rotation2d());
+    m_odometry = new DifferentialDriveOdometry(new Rotation2d(0.0), currentPose);
+    
+    /*
     if (m_doOld) {
       oldConfigure(); 
     }
@@ -150,7 +166,7 @@ public class DriveSubsystem extends SubsystemBase {
        m_leftMaster.configSelectedFeedbackSensor(TalonSRXFeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
        m_leftMaster.setSelectedSensorPosition(0, 0, 10);
        m_leftMaster.setNeutralMode(NeutralMode.Brake);
-       m_leftMaster.config_kF(0, 0.3);
+       m_leftMaster.config_kF(0, 0.);
        m_leftMaster.config_kP(0, 0.5);
        m_leftMaster.selectProfileSlot(0, 0);
        m_leftMaster.configMotionCruiseVelocity(10 / 600 * 4096); // 100 rev/min * 1min/600 (100ms) * 4096 tick/rev = ticks/100ms
@@ -239,7 +255,8 @@ public class DriveSubsystem extends SubsystemBase {
 		m_rightMaster.setInverted(true);
 		m_rightMaster.setSensorPhase(false);
 		
-		/* Set status frame periods to ensure we don't have stale data */
+    /* Set status frame periods to ensure we don't have stale data */
+    
 		m_rightMaster.setStatusFramePeriod(StatusFrame.Status_12_Feedback1, 5, Constants.kTimeoutMs);
 		m_rightMaster.setStatusFramePeriod(StatusFrame.Status_13_Base_PIDF0, 5, Constants.kTimeoutMs);
 		m_rightMaster.setStatusFramePeriod(StatusFrame.Status_14_Turn_PIDF1, 5, Constants.kTimeoutMs);
@@ -251,7 +268,7 @@ public class DriveSubsystem extends SubsystemBase {
 		m_leftMaster.configNeutralDeadband(Constants.kNeutralDeadband, Constants.kTimeoutMs);
 		
 		/* Motion Magic Configurations */
-		m_rightMaster.configMotionAcceleration(500, Constants.kTimeoutMs);
+		m_rightMaster.configMotionAcceleration(1000, Constants.kTimeoutMs);
 	//	m_rightMaster.configMotionCruiseVelocity((int)((10.0 / 600.0) * 4096.0), Constants.kTimeoutMs);
 		m_rightMaster.configMotionCruiseVelocity(2000, Constants.kTimeoutMs);
 
@@ -292,7 +309,8 @@ public class DriveSubsystem extends SubsystemBase {
 		 * - sensor deltas are very small per update, so derivative error never gets large enough to be useful.
 		 * - sensor movement is very slow causing the derivative error to be near zero.
 		 */
-		int closedLoopTimeMs = 1;
+
+		int closedLoopTimeMs = 5;
 		m_rightMaster.configClosedLoopPeriod(0, closedLoopTimeMs, Constants.kTimeoutMs);
 		m_rightMaster.configClosedLoopPeriod(1, closedLoopTimeMs, Constants.kTimeoutMs);
 
@@ -370,8 +388,14 @@ public class DriveSubsystem extends SubsystemBase {
       m_rightMaster.selectProfileSlot(Constants.kSlot_Distanc, Constants.PID_PRIMARY);
       m_rightMaster.selectProfileSlot(Constants.kSlot_Turning, Constants.PID_TURN);
   
-      m_rightMaster.set(ControlMode.MotionMagic, rightTarget, DemandType.AuxPID, 0);
-      m_leftMaster.follow(m_rightMaster, FollowerType.AuxOutput1);
+      if (false) {
+        m_rightMaster.set(ControlMode.MotionMagic, rightTarget, DemandType.AuxPID, 0);
+        m_leftMaster.follow(m_rightMaster, FollowerType.AuxOutput1);
+      }
+      else {
+        m_rightMaster.set(ControlMode.MotionMagic, rightTarget);
+        m_leftMaster.follow(m_rightMaster);
+      }
       
 
      // m_rightMaster.set(ControlMode.MotionMagic, rightTarget, DemandType.AuxPID, targetEncoderDistance);
@@ -408,7 +432,16 @@ public class DriveSubsystem extends SubsystemBase {
   @Override
   public void periodic() {
 
-    SmartDashboard.putNumber ("left encoder", getLeftEncoder());
+    var gyroAngle = Rotation2d.fromDegrees(getAngle());
+    double leftEncoder = m_leftMaster.getSelectedSensorPosition();
+    double rightEncoder = m_rightMaster.getSelectedSensorPosition();
+    Pose2d newPose = m_odometry.update(gyroAngle, leftEncoder, rightEncoder);
+    
+    double newPoseAngle = newPose.getRotation().getDegrees();
+    double newDistance = newPose.getTranslation().getY();
+    
+
+    SmartDashboard.putNumber ("left encoder", m_leftMaster.getSensorCollection().getQuadraturePosition());
     SmartDashboard.putNumber ("right encoder", m_rightMaster.getSensorCollection().getQuadraturePosition());
 
     SmartDashboard.putNumber("right sensor 0", m_rightMaster.getSelectedSensorPosition(0));

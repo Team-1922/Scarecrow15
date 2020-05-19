@@ -84,8 +84,8 @@ public double ta() {
 }
 
  public void enableCameraMode() {
- // m_cameraMode.setNumber(Constants.cLLCameraDriver);
- // m_ledMode.setNumber(Constants.cLLLedOff);
+  m_cameraMode.setNumber(Constants.cLLCameraDriver);
+  m_ledMode.setNumber(Constants.cLLLedOff);
   // m_pipeline.setNumber(1);
  }
 

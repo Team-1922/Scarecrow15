@@ -52,11 +52,17 @@ public class BeamBreak extends AnalogInput {
         int averageValue = getAverageValue();
         long accumulatorCount = getAccumulatorCount();
 
-        if (accumulatorCount > 2000 ){  // have a good number of samples, let's determine the range
+        if (accumulatorCount > 10000 ){  // have a good number of samples, let's determine the range
 
             if (averageValue > m_ceiling || averageValue < m_floor) {
                 m_broken = -1;
-                if (averageValue > m_ceiling ) { m_ceiling = averageValue; }
+                if (averageValue > m_ceiling ) { 
+                    if (m_ceiling == m_floor) {
+                        m_broken = 1;
+                    }
+                        
+                    m_ceiling = averageValue; 
+                    }
                 if (averageValue < m_floor ) { m_floor = averageValue; }
             }
             else {

@@ -14,9 +14,11 @@ import frc.robot.commands.TankDriveCommand;
 import frc.robot.commands.TurnToHeadingCommand;
 import frc.robot.commands.DriveSquareCommand;
 import frc.robot.commands.DriveToDistanceCommand;
+import frc.robot.commands.RamseteDriveToDistanceCommand;
 import frc.robot.commands.FollowImageCommand;
 import frc.robot.commands.EnableLED;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.subsystems.RamseteDriveSubsystem;
 import frc.robot.subsystems.FeedbackSubsystem;
 import frc.robot.subsystems.Pose;
 import edu.wpi.first.wpilibj2.command.*;
@@ -35,7 +37,9 @@ import frc.robot.Constants;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  //private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  
+  private final RamseteDriveSubsystem m_ramseteDriveSubsystem = new RamseteDriveSubsystem();
   private final FeedbackSubsystem m_feedbackSubsystem = new FeedbackSubsystem();
   private final Pose m_pose = new Pose();
 
@@ -45,15 +49,19 @@ public class RobotContainer {
   private final Joystick m_rightJoystick = new Joystick(Constants.cJoyStickRight);
   private final XboxController m_XBoxController = new XboxController(Constants.cXBoxController);
 
+  /*
   private final TankDriveCommand m_tankDriveCommand = new TankDriveCommand(m_driveSubsystem, m_leftJoystick, m_rightJoystick);
   private final FollowImageCommand m_followImageCommand = new FollowImageCommand(m_driveSubsystem);
-  private final DriveSquareCommand m_DriveSquareCommand = new DriveSquareCommand(m_driveSubsystem);
-
+  private final DriveSquareCommand m_DriveSquareCommand = new DriveSquareCommand(m_driveSubsystem, m_ramseteDriveSubsystem);
+*/ 
+  private final RamseteDriveToDistanceCommand m_ramseteDriveToDistanceCommand = new RamseteDriveToDistanceCommand(m_ramseteDriveSubsystem, 8);
   /**
    * The container for the robot.  Contains subsystems, OI dmevices, and commands.
    */
   public RobotContainer() {
-    m_driveSubsystem.setDefaultCommand(m_tankDriveCommand);
+   //m_driveSubsystem.setDefaultCommand(m_tankDriveCommand);
+   //  m_ramseteDriveSubsystem.setDefaultCommand(m_ramseteDriveToDistanceCommand);
+
    // m_pose.initialize();
     System.out.println("[RobotContainer]  creating the robot container");
     configureButtonBindings();
@@ -100,7 +108,7 @@ public void disablePeriodic() {
    */
   private void configureButtonBindings() {
 
-    
+    /*
     new JoystickButton(m_XBoxController, Constants.cXBoxAButton).toggleWhenPressed(m_followImageCommand);
 
     new JoystickButton(m_XBoxController, Constants.cXBoxBButton).whenPressed(new DriveToDistanceCommand(m_driveSubsystem, 10));
@@ -108,7 +116,7 @@ public void disablePeriodic() {
     new JoystickButton(m_XBoxController, Constants.cXBoxYButton).whenPressed(new TurnToHeadingCommand(m_driveSubsystem, 90)); //turns right hopefully
 
     new JoystickButton(m_XBoxController, Constants.cXBoxXButton).whenPressed(new TurnToHeadingCommand(m_driveSubsystem, -90)); //turns left
-
+*/
   }
 
 
@@ -119,6 +127,7 @@ public void disablePeriodic() {
    */
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
-    return m_DriveSquareCommand;
+    //return m_DriveSquareCommand;
+   return m_ramseteDriveToDistanceCommand;
   }
 }

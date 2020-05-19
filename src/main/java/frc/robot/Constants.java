@@ -99,7 +99,7 @@ public final class Constants {
 	/**
 	 * Motor neutral dead-band, set to the minimum 0.1%.
 	 */
-	public final static double kNeutralDeadband = 0.001;
+	public final static double kNeutralDeadband = 0.0401;
 	
 	/**
 	 * PID Gains may have to be adjusted based on the responsiveness of control loop.
@@ -107,10 +107,8 @@ public final class Constants {
      * Not all set of Gains are used in this project and may be removed as desired.
      * 
 	 * 	                                    			  kP   kI   kD   kF               Iz    PeakOut */
-	public final static Gains kGains_Distanc = new Gains( 0.5, 0.0,  0.0, 0.8,            100,  0.50 );
-	public final static Gains kGains_Turning = new Gains( 0.4, 0.0,  4.0, 0.8,            200,  1.00 );
-	public final static Gains kGains_Velocit = new Gains( 0.1, 0.0, 20.0, 1023.0/6800.0,  300,  0.50 );
-	public final static Gains kGains_MotProf = new Gains( 1.0, 0.0,  0.0, 1023.0/6800.0,  400,  1.00 );
+	public final static Gains kGains_Distanc = new Gains( 0.3, 0.000,  1, 0.186,              100,  0.50 );
+	public final static Gains kGains_Turning = new Gains( 0.0, 0.0,  0.0, 0.177,            200,  1.00 );
 	
 	/** ---- Flat constants, you should not need to change these ---- */
 	/* We allow either a 0 or 1 when selecting an ordinal for remote devices [You can have up to 2 devices assigned remotely to a talon/victor] */
