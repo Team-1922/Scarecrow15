@@ -47,7 +47,7 @@ public class DriveToDistanceCommand extends CommandBase {
   @Override
   public void initialize() {
 
-    m_driveSubsystem.driveTrainConfigure();
+    m_driveSubsystem.initForTalonController();
     
       m_rightEncoderStart = m_driveSubsystem.getEncoderSum();
       m_startEncoderDiff = m_driveSubsystem.getEncoderDifference();

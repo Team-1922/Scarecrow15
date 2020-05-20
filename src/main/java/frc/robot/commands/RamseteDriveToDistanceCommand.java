@@ -8,12 +8,17 @@
 package frc.robot.commands;
 
 import frc.robot.Constants;
-import frc.robot.subsystems.RamseteDriveSubsystem;
+import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Transform2d;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
+
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
 
@@ -22,18 +27,25 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveWheelSpeeds;
  */
 public class RamseteDriveToDistanceCommand extends CommandBase {
   @SuppressWarnings({ "PMD.UnusedPrivateField", "PMD.SingularField" })
-  private final RamseteDriveSubsystem m_driveSubsystem;
+  private final DriveSubsystem m_driveSubsystem;
+
+  double m_targetDistance = 0.0;
+  Pose2d m_goalPosition; // = new Pose2d();
 
   /**
    * Creates a new ExampleCommand.
    *
-   * @param subsystem    The subsystem used by this command.
-   * @param distanceFeet The distance in feet this command should drive. Must be
-   *                     positive
+   * @param subsystem      The subsystem used by this command.
+   * @param distanceMeters The distance in meters this command should drive. Must
+   *                       be positive
    */
-  public RamseteDriveToDistanceCommand(RamseteDriveSubsystem subsystem, double distanceFeet) {
+  public RamseteDriveToDistanceCommand(DriveSubsystem subsystem, double distanceMeters) {
 
     m_driveSubsystem = subsystem;
+    m_targetDistance = distanceMeters;
+
+
+
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(m_driveSubsystem);
   }
@@ -41,6 +53,13 @@ public class RamseteDriveToDistanceCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+
+    // m_driveSubsystem.zeroSensors();
+    Translation2d translation = new Translation2d(m_targetDistance, 0.0);
+    Rotation2d rotation = new Rotation2d (0.0);
+    Transform2d transformation = new Transform2d(translation, rotation);
+
+    m_goalPosition = m_driveSubsystem.getPositionOnField().transformBy(transformation);
 
   }
 
@@ -65,23 +84,31 @@ public class RamseteDriveToDistanceCommand extends CommandBase {
     DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(chassisSpeeds);
 
     // Left velocity
-    double leftVelocity = wheelSpeeds.leftMetersPerSecond;
+    double leftVelocity = wheelSpeeds.leftMetersPerSecond * 0.1; // velocity per 100 ms
 
     // Right velocity
-    double rightVelocity = wheelSpeeds.rightMetersPerSecond;
+    double rightVelocity = wheelSpeeds.rightMetersPerSecond * 0.1; // velocity per 100 ms
 
     SmartDashboard.putNumber("left Velocity", leftVelocity);
     SmartDashboard.putNumber("right Velocity", rightVelocity);
 
-    // meters/sec * (1sec/10 (100ms)) * (39.37 in/meter) * (1revolution/12.57in) *
-    // (4096 ticks/rev) = ticks/100ms
-    double leftVelocityInInches = Units.metersToInches(leftVelocity);
-    double leftVelocityTalonUnits = leftVelocityInInches * (1.0 / 10.0) * (1.0 / 12.57) * 4096.0;
+    double leftVelocityInTicks = Constants.kEncoderTicksPerMeter * leftVelocity;
+    double rightVelocityInTicks = Constants.kEncoderTicksPerMeter * rightVelocity;
 
-    double rightVelocityInInches = Units.metersToInches(rightVelocity);
-    double rightVelocityTalonUnits = rightVelocityInInches * (1.0 / 10.0) * (1.0 / 12.57) * 4096.0;
+    m_driveSubsystem.drive(leftVelocityInTicks, rightVelocityInTicks);
 
-    m_driveSubsystem.drive(leftVelocityTalonUnits, rightVelocityTalonUnits);
+    /*
+     * // meters/sec * (1sec/10 (100ms)) * (39.37 in/meter) * (1revolution/12.57in)
+     * * // (4096 ticks/rev) = ticks/100ms double leftVelocityInInches =
+     * Units.metersToInches(leftVelocity); double leftVelocityTalonUnits =
+     * leftVelocityInInches * (1.0 / 10.0) * (1.0 / 12.57) * 4096.0;
+     * 
+     * double rightVelocityInInches = Units.metersToInches(rightVelocity); double
+     * rightVelocityTalonUnits = rightVelocityInInches * (1.0 / 10.0) * (1.0 /
+     * 12.57) * 4096.0;
+     * 
+     * m_driveSubsystem.drive(leftVelocityTalonUnits, rightVelocityTalonUnits);
+     */
 
   }
 
@@ -95,6 +122,35 @@ public class RamseteDriveToDistanceCommand extends CommandBase {
   @Override
   public boolean isFinished() {
 
-    return false;
+    Pose2d currentPos = m_driveSubsystem.getPositionOnField();
+
+    Transform2d trans = currentPos.minus(m_goalPosition);
+
+    SmartDashboard.putNumber("Distance", trans.getTranslation().getX());
+
+    if (Math.abs(trans.getTranslation().getX()) < 0.1) {
+      SmartDashboard.putBoolean("IsFinished", true);
+      return true;
+    } else {
+      SmartDashboard.putBoolean("IsFinished", false);
+      return false;
+    }
+
+/*
+    m_driveSubsystem.getPositionOnField() - m_goalPosition.
+
+    double distanceTraveled = m_driveSubsystem.rightWheelDistance();
+
+    SmartDashboard.putNumber("Distance", distanceTraveled);
+
+    double epsilon = 0.1; // meter
+
+    boolean rightInRange = Math.abs(distanceTraveled - m_targetDistance) < epsilon;
+
+    SmartDashboard.putBoolean("IsFinished", rightInRange);
+    // boolean bothInRange = leftInRange && rightInRange;
+    return rightInRange;
+*/
+
   }
 }

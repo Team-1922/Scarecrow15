@@ -18,7 +18,6 @@ import frc.robot.commands.RamseteDriveToDistanceCommand;
 import frc.robot.commands.FollowImageCommand;
 import frc.robot.commands.EnableLED;
 import frc.robot.subsystems.DriveSubsystem;
-import frc.robot.subsystems.RamseteDriveSubsystem;
 import frc.robot.subsystems.FeedbackSubsystem;
 import frc.robot.subsystems.Pose;
 import edu.wpi.first.wpilibj2.command.*;
@@ -37,9 +36,8 @@ import frc.robot.Constants;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  //private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
+  private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
   
-  private final RamseteDriveSubsystem m_ramseteDriveSubsystem = new RamseteDriveSubsystem();
   private final FeedbackSubsystem m_feedbackSubsystem = new FeedbackSubsystem();
   private final Pose m_pose = new Pose();
 
@@ -54,15 +52,12 @@ public class RobotContainer {
   private final FollowImageCommand m_followImageCommand = new FollowImageCommand(m_driveSubsystem);
   private final DriveSquareCommand m_DriveSquareCommand = new DriveSquareCommand(m_driveSubsystem, m_ramseteDriveSubsystem);
 */ 
-  private final RamseteDriveToDistanceCommand m_ramseteDriveToDistanceCommand = new RamseteDriveToDistanceCommand(m_ramseteDriveSubsystem, 8);
+  private final RamseteDriveToDistanceCommand m_ramseteDriveToDistanceCommand = new RamseteDriveToDistanceCommand(m_driveSubsystem, 1);
   /**
    * The container for the robot.  Contains subsystems, OI dmevices, and commands.
    */
   public RobotContainer() {
-   //m_driveSubsystem.setDefaultCommand(m_tankDriveCommand);
-   //  m_ramseteDriveSubsystem.setDefaultCommand(m_ramseteDriveToDistanceCommand);
 
-   // m_pose.initialize();
     System.out.println("[RobotContainer]  creating the robot container");
     configureButtonBindings();
     m_pose.enableCameraMode();
