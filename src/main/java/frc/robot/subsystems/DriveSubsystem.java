@@ -54,6 +54,7 @@ public class DriveSubsystem extends SubsystemBase {
   public DriveSubsystem() {
     super();
 
+    zeroSensors();
     Pose2d currentPose = new Pose2d(0.0, 0.0, new Rotation2d());
     m_odometry = new DifferentialDriveOdometry(new Rotation2d(0.0), currentPose);
 
@@ -90,11 +91,11 @@ public class DriveSubsystem extends SubsystemBase {
     m_leftFront.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
     m_rightFront.configSelectedFeedbackSensor(FeedbackDevice.CTRE_MagEncoder_Relative, 0, 10);
 
-    m_rightFront.setInverted(true);
+    m_rightFront.setInverted(true);  
     m_leftFront.setInverted(false);
 
-    m_rightFront.setSensorPhase(true);
-    m_leftFront.setSensorPhase(true);
+    m_rightFront.setSensorPhase(false);
+    m_leftFront.setSensorPhase(false);
 
     m_leftBack.follow(m_leftFront);
     m_leftBack.setInverted(InvertType.FollowMaster);
@@ -115,12 +116,15 @@ public class DriveSubsystem extends SubsystemBase {
     // public final static Gains kGains_Velocit = new Gains( 0.25, 0.001, 20,
     // 1023.0/7200.0, 300, 1.00);
     double kI = 1023.0 / 7200.0;
+    double kF = 0.187;
+    double kP = 0.05; //
+    double kD = 0.0;  
 
     /* Config the Velocity closed loop gains in slot0 */
-    m_rightFront.config_kF(0, 0, Constants.kTimeoutMs);
-    m_rightFront.config_kP(0, 0, Constants.kTimeoutMs);
+    m_rightFront.config_kF(0, Constants.kGains_Distanc.kF, Constants.kTimeoutMs);
+    m_rightFront.config_kP(0, Constants.kGains_Distanc.kP, Constants.kTimeoutMs);
     m_rightFront.config_kI(0, kI, Constants.kTimeoutMs);
-    m_rightFront.config_kD(0, 0, Constants.kTimeoutMs);
+    m_rightFront.config_kD(0, Constants.kGains_Distanc.kD, Constants.kTimeoutMs);
 
     m_leftFront.configNominalOutputForward(0, Constants.kTimeoutMs);
     m_leftFront.configNominalOutputReverse(0, Constants.kTimeoutMs);
@@ -128,10 +132,10 @@ public class DriveSubsystem extends SubsystemBase {
     m_leftFront.configPeakOutputReverse(-1, Constants.kTimeoutMs);
 
     /* Config the Velocity closed loop gains in slot0 */
-    m_leftFront.config_kF(0, 0, Constants.kTimeoutMs);
-    m_leftFront.config_kP(0, 0, Constants.kTimeoutMs);
+    m_leftFront.config_kF(0, Constants.kGains_Distanc.kF, Constants.kTimeoutMs);
+    m_leftFront.config_kP(0, Constants.kGains_Distanc.kP, Constants.kTimeoutMs);
     m_leftFront.config_kI(0, kI, Constants.kTimeoutMs);
-    m_leftFront.config_kD(0, 0, Constants.kTimeoutMs);
+    m_leftFront.config_kD(0, Constants.kGains_Distanc.kD, Constants.kTimeoutMs);
 
     Pose2d currentPose = new Pose2d(0.0, 0.0, new Rotation2d());
     m_odometry = new DifferentialDriveOdometry(new Rotation2d(0.0), currentPose);
@@ -303,6 +307,11 @@ public class DriveSubsystem extends SubsystemBase {
     m_rightFront.setSelectedSensorPosition(0);
   }
 
+  public void zeroPose() {
+    zeroSensors();
+    resetGyro();
+  }
+
   public void stop() {
     m_leftFront.stopMotor();
     m_rightFront.stopMotor();
@@ -317,7 +326,6 @@ public class DriveSubsystem extends SubsystemBase {
 
   public double rightWheelDistance() {
     double pulses = m_rightFront.getSensorCollection().getQuadraturePosition();
-    SmartDashboard.putNumber("right pulses", pulses);
     return wheelDistance(pulses);
   }
 
@@ -375,7 +383,8 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public double getAngle() {
-    return m_navXMP.getYaw();
+//    return m_navXMP.getYaw();
+    return m_navXMP.getAngle();
   }
 
   @Override
@@ -390,12 +399,21 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void ramsetePeriodic() {
-    var gyroAngle = Rotation2d.fromDegrees(getAngle());
+
+  // Get my gyro angle. We are negating the value because gyros return positive
+  // values as the robot turns clockwise. This is not standard convention that is
+  // used by the WPILib classes.
+
+  double rad = Units.degreesToRadians(-getAngle());
+  Rotation2d gyroAngle = new Rotation2d(rad);
     
-    double leftEncoder = m_leftFront.getSelectedSensorPosition() / Constants.kEncoderTicksPerMeter;
-    double rightEncoder = m_rightFront.getSelectedSensorPosition() / Constants.kEncoderTicksPerMeter;
+   double leftEncoder = m_leftFront.getSelectedSensorPosition() / Constants.kEncoderTicksPerMeter;
+   double rightEncoder = m_rightFront.getSelectedSensorPosition() / Constants.kEncoderTicksPerMeter;
+   //double leftEncoder = m_leftFront.getSelectedSensorPosition() * Constants.kMetersPerTic;
+   //double rightEncoder = m_rightFront.getSelectedSensorPosition() * Constants.kMetersPerTic;
 
     m_odometry.update(gyroAngle, leftEncoder, rightEncoder);
 
+    
   }
 }

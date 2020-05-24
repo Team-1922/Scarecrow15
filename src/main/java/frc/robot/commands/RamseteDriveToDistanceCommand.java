@@ -10,12 +10,21 @@ package frc.robot.commands;
 import frc.robot.Constants;
 import frc.robot.subsystems.DriveSubsystem;
 import edu.wpi.first.wpilibj2.command.CommandBase;
+import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import edu.wpi.first.wpilibj.smartdashboard.*;
-
+import edu.wpi.first.wpilibj.trajectory.Trajectory;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
+import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveKinematicsConstraint;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.kinematics.ChassisSpeeds;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Transform2d;
+
+import java.util.List;
+import java.util.function.BiConsumer;
+
+import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 
@@ -32,6 +41,7 @@ public class RamseteDriveToDistanceCommand extends CommandBase {
   double m_targetDistance = 0.0;
   Pose2d m_goalPosition; // = new Pose2d();
 
+
   /**
    * Creates a new ExampleCommand.
    *
@@ -44,8 +54,6 @@ public class RamseteDriveToDistanceCommand extends CommandBase {
     m_driveSubsystem = subsystem;
     m_targetDistance = distanceMeters;
 
-
-
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(m_driveSubsystem);
   }
@@ -56,7 +64,7 @@ public class RamseteDriveToDistanceCommand extends CommandBase {
 
     // m_driveSubsystem.zeroSensors();
     Translation2d translation = new Translation2d(m_targetDistance, 0.0);
-    Rotation2d rotation = new Rotation2d (0.0);
+    Rotation2d rotation = new Rotation2d(0.0);
     Transform2d transformation = new Transform2d(translation, rotation);
 
     m_goalPosition = m_driveSubsystem.getPositionOnField().transformBy(transformation);
@@ -69,10 +77,8 @@ public class RamseteDriveToDistanceCommand extends CommandBase {
     setSpeed();
   }
 
+  
   public void setSpeed() {
-
-    // Creating my kinematics object: track width of 27 inches
-    DifferentialDriveKinematics kinematics = new DifferentialDriveKinematics(Units.inchesToMeters(18.0));
 
     double backToStraight = Units.degreesToRadians(m_driveSubsystem.getAngle());
 
@@ -80,8 +86,9 @@ public class RamseteDriveToDistanceCommand extends CommandBase {
     // 1 radian per second angular velocity.
     var chassisSpeeds = new ChassisSpeeds(0.001, 0, 0);
 
+  
     // Convert to wheel speeds
-    DifferentialDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(chassisSpeeds);
+    DifferentialDriveWheelSpeeds wheelSpeeds = Constants.kDriveKinematics.toWheelSpeeds(chassisSpeeds);
 
     // Left velocity
     double leftVelocity = wheelSpeeds.leftMetersPerSecond * 0.1; // velocity per 100 ms
@@ -136,21 +143,25 @@ public class RamseteDriveToDistanceCommand extends CommandBase {
       return false;
     }
 
-/*
-    m_driveSubsystem.getPositionOnField() - m_goalPosition.
-
-    double distanceTraveled = m_driveSubsystem.rightWheelDistance();
-
-    SmartDashboard.putNumber("Distance", distanceTraveled);
-
-    double epsilon = 0.1; // meter
-
-    boolean rightInRange = Math.abs(distanceTraveled - m_targetDistance) < epsilon;
-
-    SmartDashboard.putBoolean("IsFinished", rightInRange);
-    // boolean bothInRange = leftInRange && rightInRange;
-    return rightInRange;
-*/
+    /*
+     * m_driveSubsystem.getPositionOnField() - m_goalPosition.
+     * 
+     * double distanceTraveled = m_driveSubsystem.rightWheelDistance();
+     * 
+     * SmartDashboard.putNumber("Distance", distanceTraveled);
+     * 
+     * double epsilon = 0.1; // meter
+     * 
+     * boolean rightInRange = Math.abs(distanceTraveled - m_targetDistance) <
+     * epsilon;
+     * 
+     * SmartDashboard.putBoolean("IsFinished", rightInRange); // boolean bothInRange
+     * = leftInRange && rightInRange; return rightInRange;
+     */
 
   }
+
+ 
+
+
 }

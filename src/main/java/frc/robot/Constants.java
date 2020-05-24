@@ -7,6 +7,10 @@
 
 package frc.robot;
 
+
+import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.util.Units;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide
  * numerical or boolean constants. This class should not be used for any other
@@ -108,7 +112,8 @@ public final class Constants {
 	 * 
 	 * kP kI kD kF Iz PeakOut
 	 */
-	public final static Gains kGains_Distanc = new Gains(0.3, 0.000, 1, 0.186, 100, 0.50);
+	public final static Gains kGains_Distanc = new Gains(0.3, 0.000, 1, 0.177, 100, 0.50);
+	// public final static Gains kGains_Distanc = new Gains(0.5, 0.000, 1, 0.2, 100, 0.50);
 	public final static Gains kGains_Turning = new Gains(0.0, 0.0, 0.0, 0.177, 200, 1.00);
 
 	// public final static Gains kGains_Velocit = new Gains( 0.25, 0.001, 20,
@@ -141,10 +146,25 @@ public final class Constants {
 	public final static int kSlot_Velocit = SLOT_2;
 	public final static int kSlot_MotProf = SLOT_3;
 
+
+	public final static double kWheelDiameterInches = 3.943; //
 	public final static double kFullRotationPulses = 4096.0;
-	public final static double kWheelDiameter = .1016;  // wheel diameter in meters
+	public final static double kWheelDiameter = Units.inchesToMeters(kWheelDiameterInches); // wheel diameter in meters
 	public final static double kWheelCircumference = kWheelDiameter * Math.PI; // circumference in meters
-	public final static double kEncoderTicksPerMeter = kFullRotationPulses * (1.0 / kWheelCircumference); 
+	public final static double kEncoderTicksPerMeter = kFullRotationPulses * (1.0 / kWheelCircumference);
+	public final static double kMetersPerTic = (1.0 /  kWheelCircumference) / kFullRotationPulses;
+
+
+	public final static double kAutonomousMaxSpeedMetersPerSecond = 0.5; // this can go up to 3 meters/second to give us 10ft/second
+	public final static double kAutoMaxAccelerationMetersPerSecondSquared = 0.25; // wild guess at a reasonable value, needs to be tuned
+	// Reasonable baseline values for a RAMSETE follower in units of meters and seconds
+	public final static double kRamseteB = 2;
+	public final static double kRamseteZeta = 0.75;
+
+
+	public static final double kTrackwidthMeters = (22.0 * .0254); 
+    public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
+		
 
 
 }

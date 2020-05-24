@@ -127,8 +127,7 @@ public double ta() {
 
   @Override
   public void periodic() {
-
-    SmartDashboard.putNumber ("Pose heading", getAngle());
+/*
     m_beamBreak.periodic();
     enableCameraMode();
 
@@ -138,20 +137,7 @@ public double ta() {
 
     double compassHeading = m_imu.getAbsoluteCompassHeading();
     SmartDashboard.putNumber ("IMU angle", ypr[0]);
-
-
-
-
-    SmartDashboard.putNumber("tx", tx());
-    SmartDashboard.putNumber("ty", ty());
-    SmartDashboard.putNumber("ta", ta());
-
-    SmartDashboard.putNumber ("Left TOF", getLeftTOFDistance());
-    SmartDashboard.putNumber ("Right TOF", getRightTOFDistance());
-
-    // will get some blinking of the widget depending on the sampling time
-   // SmartDashboard.putBoolean("Left valid", m_leftTOF.isRangeValid());
-   // SmartDashboard.putBoolean("Right valid", m_rightTOF.isRangeValid());
+*/
  
   }
 }
