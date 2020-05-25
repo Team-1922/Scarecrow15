@@ -41,6 +41,7 @@ public class DriveSubsystem extends SubsystemBase {
   private PigeonIMU m_imu = new PigeonIMU(Constants.kIMU);
 
   DifferentialDriveOdometry m_odometry;
+  DifferentialDriveOdometry m_homeOdometry;
 
   /**
    * Creates a new DriveSystem.
@@ -50,6 +51,9 @@ public class DriveSubsystem extends SubsystemBase {
 
     Pose2d currentPose = new Pose2d(0.0, 0.0, new Rotation2d());
     m_odometry = new DifferentialDriveOdometry(new Rotation2d(0.0), currentPose);
+    Pose2d homePose = new Pose2d(0.0, 0.0, new Rotation2d());
+    m_homeOdometry = new DifferentialDriveOdometry(new Rotation2d(0.0), homePose);
+    
 
   }
 
@@ -131,6 +135,11 @@ public class DriveSubsystem extends SubsystemBase {
     Rotation2d angle = new Rotation2d(rad);
     Pose2d position = new Pose2d(x, y, angle);
     m_odometry.resetPosition(position, angle);
+
+    Rotation2d homeAngle = new Rotation2d(rad);
+    
+    Pose2d homePosition = new Pose2d(x, y, angle);
+    m_homeOdometry.resetPosition(homePosition, homeAngle);
   }
 
   public void IMUInit() {
@@ -248,6 +257,10 @@ public class DriveSubsystem extends SubsystemBase {
 
   public Pose2d getPositionOnField() {
     return m_odometry.getPoseMeters();
+  }
+
+  public Pose2d getHomePosition() {
+    return m_homeOdometry.getPoseMeters();
   }
 
   public void updateOdometry() {

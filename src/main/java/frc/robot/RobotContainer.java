@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -88,17 +89,16 @@ public class RobotContainer {
     m_driveSubsystem.initControlSystem();
     m_vision.enableCameraMode();
  
-    m_autoChooser.setDefaultOption("straight", buildAutoCommand(true));
-    m_autoChooser.addOption("serpentine", buildAutoCommand(false));
-    SmartDashboard.putData("Autonomous Chooser", m_autoChooser);
+    m_autoChooser.setDefaultOption("straight", buildAutoCommand(0));  
+    m_autoChooser.addOption("serpentine", buildAutoCommand(1));
+    m_autoChooser.addOption("Go Home", buildAutoCommand(2));
 
+    SmartDashboard.putData("Autonomous Chooser", m_autoChooser);
 
   }
 
   public void autonomousInit(){
     m_driveSubsystem.zeroPose();
-    m_driveSubsystem.setStartingPosition(0.0, 0.0, 0.0);
-
   }
 
   public void teleopInit() {
@@ -161,7 +161,7 @@ public class RobotContainer {
     // return buildAutoCommand(false);
   }
 
-  public CommandBase buildAutoCommand(boolean straight) {
+  public CommandBase buildAutoCommand(int pathOption) {
     // Create a voltage constraint to ensure we don't accelerate too fast
 
     // m_driveSubsystem.initForRamseteDrive();
@@ -186,11 +186,16 @@ public class RobotContainer {
     // An example trajectory to follow. All units in meters.
     // Trajectory trajectory = generateStraightPath(config, 2.0); 
     Trajectory trajectory;
-    if (straight) {
+    if (0 == pathOption) {
       trajectory = generateStraightPath(config, 2.0); //
-    } else {
+    } else if (1 == pathOption ) {
       trajectory = generateSPath(config);
     }
+    else {
+      trajectory = generateHomePath(config);
+
+    }
+
     
 
     RamseteCommand ramseteCommand = new RamseteCommand(trajectory, m_driveSubsystem::getPositionOnField,
@@ -203,11 +208,44 @@ public class RobotContainer {
 
   public Trajectory generateStraightPath(TrajectoryConfig config, double distance) {
 
-    double yaw = m_driveSubsystem.getAngle();
-    double rads = Units.degreesToRadians(-yaw);
+
+    Pose2d startPose = m_driveSubsystem.getPositionOnField();
+
+    Rotation2d endRotation = startPose.getRotation();
+    Translation2d translation = new Translation2d(distance, 0.0);
+
+    Pose2d endPose = new Pose2d(translation, endRotation);
+
     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
-        List.of(new Pose2d(0, 0, new Rotation2d(rads)), new Pose2d(distance, 0, new Rotation2d(rads))),
+        List.of(startPose, endPose),
+        // Pass config
+        config);
+
+    // List<Trajectory.State> states = trajectory.getStates();
+    // logGeneratedTrajectory(states);
+
+    return trajectory;
+  }
+
+  public Trajectory generateHomePath(TrajectoryConfig config) {
+
+
+    Pose2d startPose = m_driveSubsystem.getPositionOnField();
+
+    Rotation2d endRotation = startPose.getRotation();
+    Translation2d translation = new Translation2d(2.0, 0.0);
+
+    Pose2d endPose = new Pose2d(translation, endRotation);
+/*
+    
+    Pose2d startPose = m_driveSubsystem.getPositionOnField();
+    Pose2d endPose = m_driveSubsystem.getPositionOnField();
+//    Pose2d endPose = m_driveSubsystem.getHomePosition();
+*/
+    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+        // Start at the origin facing the +X direction
+        List.of(startPose, endPose),
         // Pass config
         config);
 
@@ -219,16 +257,23 @@ public class RobotContainer {
 
   public Trajectory generateSPath(TrajectoryConfig config) {
 
-    double yaw = m_driveSubsystem.getAngle();
-    double rads = Units.degreesToRadians(-yaw);
+    double distance = 3.0;
+    
+    Pose2d startPose = m_driveSubsystem.getPositionOnField();
+
+    Rotation2d endRotation = startPose.getRotation();
+    Translation2d translation = new Translation2d(distance, 0.0);
+
+    Pose2d endPose = new Pose2d(translation, endRotation);
+
 
     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
-        new Pose2d(0, 0, new Rotation2d(rads)),
+        startPose,
         // Pass through these two interior waypoints, making an 's' curve path
         List.of(new Translation2d(1, 0.25), new Translation2d(2, -0.25)),
         // End 3 meters straight ahead of where we started, facing forward
-        new Pose2d(3, 0, new Rotation2d(rads)),
+        endPose,
         // Pass config
         config);
 
@@ -241,6 +286,8 @@ public class RobotContainer {
 
     double traveled = m_driveSubsystem.getPositionOnField().getTranslation().getX();
 
+    SmartDashboard.putNumber("xdrive", left);
+    SmartDashboard.putNumber("ydrive", right);
     SmartDashboard.putNumber("traveled", traveled);
   }
 

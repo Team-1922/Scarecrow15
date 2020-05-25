@@ -40,7 +40,7 @@ public class TankDriveCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_driveSubsystem.initControlSystem();
+    // m_driveSubsystem.initControlSystem();
   }
 
   double deadBand(double value) {
@@ -48,7 +48,7 @@ public class TankDriveCommand extends CommandBase {
     double sign = 1;
     if (value < 0) { sign = -1; }
 
-    double val = value * value * sign;  // try to smooth it out a little
+    double val = value * value * value;  // try to smooth it out a little
     if (Math.abs(val) < 0.05) {
       return 0.0;
     }
