@@ -25,8 +25,8 @@ public class DriveSquareCommand extends SequentialCommandGroup {
     super(
       new ResetGyroCommand(subsystem),
       new WaitCommand(1),
-      //new DriveToDistanceCommand(subsystem, 30),
-      new RamseteDriveToDistanceCommand(subsystem, 10),
+      // new DriveToDistanceCommand(subsystem, 30),
+      // new RamseteDriveToDistanceCommand(subsystem, 10),
       new WaitCommand(2)
     //  new TurnToHeadingCommand(subsystem, 90)
      /* new DriveToDistanceCommand(subsystem, 2),

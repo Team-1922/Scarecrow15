@@ -23,10 +23,6 @@ public class TankDriveCommand extends CommandBase {
   private final Joystick m_leftStick;
   private final Joystick m_rightStick;
 
-
- 
-  
-
   /**
    * Creates a new ExampleCommand.
    *
@@ -44,13 +40,36 @@ public class TankDriveCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_driveSubsystem.initForTankDrive();
+    m_driveSubsystem.initControlSystem();
+  }
+
+  double deadBand(double value) {
+    
+    double sign = 1;
+    if (value < 0) { sign = -1; }
+
+    double val = value * value * sign;  // try to smooth it out a little
+    if (Math.abs(val) < 0.05) {
+      return 0.0;
+    }
+    else {
+      return val;
+    }
+
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-      m_driveSubsystem.drive(-m_leftStick.getY(),-m_rightStick.getY());
+
+    double left = Constants.kMaxTelopVelocity * deadBand(-m_leftStick.getY());
+    double right  = Constants.kMaxTelopVelocity * deadBand(-m_rightStick.getY());
+    
+
+    // the drive system is set up to target speed, so - we want to convert this to a speed which will be a range of full reverse to full forward or ~ -3m/s to 3m/s
+   //   m_driveSubsystem.drive(-m_leftStick.getY(),-m_rightStick.getY());
+   m_driveSubsystem.drive (left, right);
+
   }
 
   // Called once the command ends or is interrupted.

@@ -24,7 +24,7 @@ public class ResetGyroCommand extends InstantCommand {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_subsystem.resetGyro();
+    m_subsystem.zeroSensors();
     
   }
 }

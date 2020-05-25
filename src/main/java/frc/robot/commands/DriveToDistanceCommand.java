@@ -18,12 +18,8 @@ import edu.wpi.first.wpilibj.smartdashboard.*;
 public class DriveToDistanceCommand extends CommandBase {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
   private final DriveSubsystem m_driveSubsystem;
-  private int m_leftEncoderStart;
-  private int m_rightEncoderStart;
-  private int m_leftEncoderTarget;
   private int m_rightEncoderTarget;
   private int m_startEncoderDiff;
-  private double m_distanceFeet;
 
   private boolean m_executed = false;
 
@@ -38,7 +34,6 @@ public class DriveToDistanceCommand extends CommandBase {
   public DriveToDistanceCommand(DriveSubsystem subsystem, double distanceFeet) {
 
     m_driveSubsystem = subsystem;
-    m_distanceFeet = distanceFeet;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(m_driveSubsystem);
   }
@@ -47,6 +42,7 @@ public class DriveToDistanceCommand extends CommandBase {
   @Override
   public void initialize() {
 
+    /*
     m_driveSubsystem.initForTalonController();
     
       m_rightEncoderStart = m_driveSubsystem.getEncoderSum();
@@ -56,6 +52,7 @@ public class DriveToDistanceCommand extends CommandBase {
       SmartDashboard.putNumber("sensor 0 target", m_rightEncoderTarget);
       SmartDashboard.putNumber("sensor 1 target", m_startEncoderDiff);
       m_executed = false;
+      */
 
   }
 

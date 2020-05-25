@@ -18,6 +18,7 @@ import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.trajectory.Trajectory;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
@@ -29,17 +30,17 @@ import frc.robot.commands.TankDriveCommand;
 import frc.robot.commands.TurnToHeadingCommand;
 import frc.robot.commands.DriveSquareCommand;
 import frc.robot.commands.DriveToDistanceCommand;
-import frc.robot.commands.RamseteDriveToDistanceCommand;
 import frc.robot.commands.FollowImageCommand;
 import frc.robot.commands.EnableLED;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.FeedbackSubsystem;
-import frc.robot.subsystems.Pose;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 
 import frc.robot.Constants;
+import frc.robot.Components.BeamBreak;
+import frc.robot.Components.Vision;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -53,22 +54,23 @@ public class RobotContainer {
   private final DriveSubsystem m_driveSubsystem = new DriveSubsystem();
 
   private final FeedbackSubsystem m_feedbackSubsystem = new FeedbackSubsystem();
-  private final Pose m_pose = new Pose();
 
   private final Joystick m_leftJoystick = new Joystick(Constants.cJoyStickLeft);
   private final Joystick m_rightJoystick = new Joystick(Constants.cJoyStickRight);
   private final XboxController m_XBoxController = new XboxController(Constants.cXBoxController);
+  private final Vision m_vision = new Vision();
+  private final BeamBreak m_beamBreak = new BeamBreak(Constants.kBeamBreak);
+
+  private final TankDriveCommand m_tankDriveCommand = new TankDriveCommand(m_driveSubsystem, m_leftJoystick,m_rightJoystick);
+
+  private SendableChooser<Command> m_autoChooser = new SendableChooser<Command>();
 
   /*
-   * private final TankDriveCommand m_tankDriveCommand = new
-   * TankDriveCommand(m_driveSubsystem, m_leftJoystick, m_rightJoystick); private
-   * final FollowImageCommand m_followImageCommand = new
+   * private final FollowImageCommand m_followImageCommand = new
    * FollowImageCommand(m_driveSubsystem); private final DriveSquareCommand
    * m_DriveSquareCommand = new DriveSquareCommand(m_driveSubsystem,
    * m_ramseteDriveSubsystem);
    */
-  private final RamseteDriveToDistanceCommand m_ramseteDriveToDistanceCommand = new RamseteDriveToDistanceCommand(
-      m_driveSubsystem, 1);
 
   /**
    * The container for the robot. Contains subsystems, OI dmevices, and commands.
@@ -77,21 +79,36 @@ public class RobotContainer {
 
     System.out.println("[RobotContainer]  creating the robot container");
     configureButtonBindings();
-    m_pose.enableCameraMode();
+
+
   }
 
-  public void IMUInit() {
-    m_pose.IMUInit();
+  public void robotInit() {
+
+    m_driveSubsystem.initControlSystem();
+    m_vision.enableCameraMode();
+ 
+    m_autoChooser.setDefaultOption("straight", buildAutoCommand(true));
+    m_autoChooser.addOption("serpentine", buildAutoCommand(false));
+    SmartDashboard.putData("Autonomous Chooser", m_autoChooser);
+
+
+  }
+
+  public void autonomousInit(){
+    m_driveSubsystem.zeroPose();
+    m_driveSubsystem.setStartingPosition(0.0, 0.0, 0.0);
+
   }
 
   public void teleopInit() {
     m_feedbackSubsystem.enableLED(true);
-    IMUInit();
+    m_driveSubsystem.setDefaultCommand(m_tankDriveCommand);
   }
 
   public void teleopPeriodic() {
 
-    if (m_pose.beamBroken()) {
+    if (m_beamBreak.broken()) {
       if (m_feedbackSubsystem.ledsOn()) {
         CommandScheduler.getInstance().schedule(new EnableLED(m_feedbackSubsystem, false));
       }
@@ -138,39 +155,22 @@ public class RobotContainer {
   public Command getAutonomousCommand() {
     // An ExampleCommand will run in autonomous
     // return m_DriveSquareCommand;
-    return buildRamseteCommand();
+
+    return (Command) m_autoChooser.getSelected();
+
+    // return buildAutoCommand(false);
   }
 
-  public void ramseteUpdate(double left, double right) {
-
-    double traveled = m_driveSubsystem.getPositionOnField().getTranslation().getX();
-
-    SmartDashboard.putNumber("left distance", m_driveSubsystem.leftWheelDistance());
-    SmartDashboard.putNumber("right distance", m_driveSubsystem.rightWheelDistance());
-    SmartDashboard.putNumber("left Speed", left);
-    SmartDashboard.putNumber("right Speed", right);
-
-    SmartDashboard.putNumber("traveled", traveled);
-    SmartDashboard.putNumber("gyro", m_driveSubsystem.getAngle());
-
-    /*
-     * Pose2d pose = m_driveSubsystem.getPositionOnField(); double distanceX =
-     * pose.getTranslation().getX(); double distanceY =
-     * pose.getTranslation().getY(); double angle = pose.getRotation().getDegrees();
-     * 
-     * System.out.println("[Pose ]" + " Distance X " + distanceX + " Distance Y " +
-     * distanceY + " Angle " + angle);
-     */
-  }
-
-  public CommandBase buildRamseteCommand() {
+  public CommandBase buildAutoCommand(boolean straight) {
     // Create a voltage constraint to ensure we don't accelerate too fast
 
-    m_driveSubsystem.initForRamseteDrive();
-    m_driveSubsystem.zeroPose();
-    ramseteUpdate(0, 0);
+    // m_driveSubsystem.initForRamseteDrive();
+    // m_driveSubsystem.zeroPose();
+
+    System.out.println("RobotContainer.buildAutoCommand]");
+
     BiConsumer<Double, Double> ramseteConsumer = (left, right) -> {
-      ramseteUpdate(left, right);
+      updateDashboard(left, right);
       m_driveSubsystem.drive(left, right);
     };
 
@@ -181,40 +181,17 @@ public class RobotContainer {
     TrajectoryConfig config = new TrajectoryConfig(Constants.kAutonomousMaxSpeedMetersPerSecond,
         Constants.kAutoMaxAccelerationMetersPerSecondSquared)
             // Add kinematics to ensure max speed is actually obeyed
-            .setKinematics(Constants.kDriveKinematics)
-            .addConstraint(driveConstraint);
+            .setKinematics(Constants.kDriveKinematics).addConstraint(driveConstraint);
 
     // An example trajectory to follow. All units in meters.
-    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
-        // Start at the origin facing the +X direction
-        new Pose2d(0, 0, new Rotation2d(0)),
-        // Pass through these two interior waypoints, making an 's' curve path
-        List.of(new Translation2d(1, 0.25), new Translation2d(2, -0.25)),
-        // End 3 meters straight ahead of where we started, facing forward
-        new Pose2d(3, 0, new Rotation2d(0)),
-        // Pass config
-        config);
-
-    /*
-     * Trajectory trajectory = TrajectoryGenerator.generateTrajectory( List.of( //
-     * Start at the origin facing the +X direction new Pose2d(0, 0, new
-     * Rotation2d(0.0)), // End 3 meters straight ahead of where we started, facing
-     * forward new Pose2d(2, 0, new Rotation2d(Units.degreesToRadians(5)))), // new
-     * Pose2d(2, 0, new Rotation2d(0.0))), // Pass config config);
-     * 
-     */
-
-    List<Trajectory.State> states = trajectory.getStates();
-    for (int i = 0; i < states.size(); i++) {
-      Trajectory.State state = states.get(i);
-      double distanceX = state.poseMeters.getTranslation().getX();
-      double distanceY = state.poseMeters.getTranslation().getY();
-      double angle = state.poseMeters.getRotation().getDegrees();
-      double t = state.timeSeconds;
-
-      System.out.println("[Trajectory " + i + "]" + " Time: " + t + " Distance X " + distanceX + " Distance Y "
-          + distanceY + " Angle " + angle);
+    // Trajectory trajectory = generateStraightPath(config, 2.0); 
+    Trajectory trajectory;
+    if (straight) {
+      trajectory = generateStraightPath(config, 2.0); //
+    } else {
+      trajectory = generateSPath(config);
     }
+    
 
     RamseteCommand ramseteCommand = new RamseteCommand(trajectory, m_driveSubsystem::getPositionOnField,
         new RamseteController(Constants.kRamseteB, Constants.kRamseteZeta), Constants.kDriveKinematics, ramseteConsumer,
@@ -223,4 +200,48 @@ public class RobotContainer {
     return ramseteCommand.andThen(() -> m_driveSubsystem.stop());
 
   }
+
+  public Trajectory generateStraightPath(TrajectoryConfig config, double distance) {
+
+    double yaw = m_driveSubsystem.getAngle();
+    double rads = Units.degreesToRadians(-yaw);
+    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+        // Start at the origin facing the +X direction
+        List.of(new Pose2d(0, 0, new Rotation2d(rads)), new Pose2d(distance, 0, new Rotation2d(rads))),
+        // Pass config
+        config);
+
+    // List<Trajectory.State> states = trajectory.getStates();
+    // logGeneratedTrajectory(states);
+
+    return trajectory;
+  }
+
+  public Trajectory generateSPath(TrajectoryConfig config) {
+
+    double yaw = m_driveSubsystem.getAngle();
+    double rads = Units.degreesToRadians(-yaw);
+
+    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+        // Start at the origin facing the +X direction
+        new Pose2d(0, 0, new Rotation2d(rads)),
+        // Pass through these two interior waypoints, making an 's' curve path
+        List.of(new Translation2d(1, 0.25), new Translation2d(2, -0.25)),
+        // End 3 meters straight ahead of where we started, facing forward
+        new Pose2d(3, 0, new Rotation2d(rads)),
+        // Pass config
+        config);
+
+    // List<Trajectory.State> states = trajectory.getStates();
+    // logGeneratedTrajectory(states);
+    return trajectory;
+  }
+
+  public void updateDashboard(double left, double right) {
+
+    double traveled = m_driveSubsystem.getPositionOnField().getTranslation().getX();
+
+    SmartDashboard.putNumber("traveled", traveled);
+  }
+
 }

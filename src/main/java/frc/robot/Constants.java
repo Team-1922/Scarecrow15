@@ -72,6 +72,10 @@ public final class Constants {
 	// IMU
 	public static final int kIMU = 7;
 
+
+	// Beam break
+	public static final int kBeamBreak = 0;
+
 	///////////// from CTRE
 
 	/**
@@ -112,9 +116,14 @@ public final class Constants {
 	 * 
 	 * kP kI kD kF Iz PeakOut
 	 */
-	public final static Gains kGains_Distanc = new Gains(0.3, 0.000, 1, 0.177, 100, 0.50);
+
+	 
+    // public final static Gains kGains_Velocit = new Gains( 0.25, 0.001, 20,
+	// 1023.0/7200.0, 300, 1.00);
+	
+	public final static Gains kGains_Distanc = new Gains(0.3, 1023.0 / 7200.0, 1, 0.177, 100, 0.50);
 	// public final static Gains kGains_Distanc = new Gains(0.5, 0.000, 1, 0.2, 100, 0.50);
-	public final static Gains kGains_Turning = new Gains(0.0, 0.0, 0.0, 0.177, 200, 1.00);
+	public final static Gains kGains_Turning = new Gains(0.0, 1023.0 / 7200.0, 0.0, 0.177, 200, 1.00);
 
 	// public final static Gains kGains_Velocit = new Gains( 0.25, 0.001, 20,
 	// 1023.0/7200.0, 300, 1.00);
@@ -163,8 +172,11 @@ public final class Constants {
 
 
 	public static final double kTrackwidthMeters = (22.0 * .0254); 
-    public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
-		
+	public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
+	
+	public static final double kMaxTelopVelocity = Units.feetToMeters(9.0); // 12 feet per second - needs to match the current gearbox capability
+	public static final double kMaxTelopAcceleration = Units.feetToMeters(3.0); // 12 meters per second
+	public static final int kMaxTelopAccelerationInSensorUnits = (int) ((kMaxTelopAcceleration / kEncoderTicksPerMeter) * 0.1);  // the ten is to get it to 100ms instead of a second
 
 
 }
