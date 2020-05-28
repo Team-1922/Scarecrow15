@@ -121,7 +121,7 @@ public final class Constants {
     // public final static Gains kGains_Velocit = new Gains( 0.25, 0.001, 20,
 	// 1023.0/7200.0, 300, 1.00);
 	
-	public final static Gains kGains_Distanc = new Gains(0.3, 1023.0 / 7200.0, 1, 0.177, 100, 0.50);
+	public final static Gains kGains_Distanc = new Gains(0.1, 0, 0, 0.2, 100, 0.50);
 	// public final static Gains kGains_Distanc = new Gains(0.5, 0.000, 1, 0.2, 100, 0.50);
 	public final static Gains kGains_Turning = new Gains(0.0, 1023.0 / 7200.0, 0.0, 0.177, 200, 1.00);
 
@@ -164,8 +164,8 @@ public final class Constants {
 	public final static double kMetersPerTic = (1.0 /  kWheelCircumference) / kFullRotationPulses;
 
 
-	public final static double kAutonomousMaxSpeedMetersPerSecond = 0.5; // this can go up to 3 meters/second to give us 10ft/second
-	public final static double kAutoMaxAccelerationMetersPerSecondSquared = 0.25; // wild guess at a reasonable value, needs to be tuned
+	public final static double kAutonomousMaxSpeedMetersPerSecond = 2.0; // this can go up to 3 meters/second to give us 10ft/second
+	public final static double kAutoMaxAccelerationMetersPerSecondSquared = 1.0; // wild guess at a reasonable value, needs to be tuned
 	// Reasonable baseline values for a RAMSETE follower in units of meters and seconds
 	public final static double kRamseteB = 2;
 	public final static double kRamseteZeta = 0.75;

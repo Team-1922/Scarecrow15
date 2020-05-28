@@ -188,12 +188,17 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void drive(double left, double right) {
 
-    m_leftFront.set(left);
-    m_rightFront.set(right);
+    //speed comes in in meters/sec needs to be ticks/100ms
 
-    SmartDashboard.putNumber("left Speed", left);
-    SmartDashboard.putNumber("right Speed", right);
+    double leftVelocity = left * Constants.kEncoderTicksPerMeter * .1; 
+    double rightVelocity = right * Constants.kEncoderTicksPerMeter * .1;
+    m_leftFront.set(ControlMode.Velocity, leftVelocity);
+    m_rightFront.set(ControlMode.Velocity, rightVelocity);
 
+    SmartDashboard.putNumber("left Speed m/s", left);
+    SmartDashboard.putNumber("right Speed m/s", right);
+    SmartDashboard.putNumber("left Speed ticks/100ms", leftVelocity);
+    SmartDashboard.putNumber("right Speed ticks/100ms", rightVelocity);
   }
 
   public int getLeftError() {
@@ -297,6 +302,9 @@ public class DriveSubsystem extends SubsystemBase {
 
     SmartDashboard.putNumber("left distance", leftWheelDistance());
     SmartDashboard.putNumber("right distance", rightWheelDistance());
+
+    SmartDashboard.putNumber("left velocity", m_leftFront.getSelectedSensorVelocity());
+    SmartDashboard.putNumber("right velocity", m_rightFront.getSelectedSensorVelocity());
 
     SmartDashboard.putNumber("gyro", getAngle());
 

@@ -44,11 +44,8 @@ public class TankDriveCommand extends CommandBase {
   }
 
   double deadBand(double value) {
-    
-    double sign = 1;
-    if (value < 0) { sign = -1; }
 
-    double val = value * value * value;  // try to smooth it out a little
+    double val = value * Math.abs(value);  // try to smooth it out a little
     if (Math.abs(val) < 0.05) {
       return 0.0;
     }
@@ -64,7 +61,6 @@ public class TankDriveCommand extends CommandBase {
 
     double left = Constants.kMaxTelopVelocity * deadBand(-m_leftStick.getY());
     double right  = Constants.kMaxTelopVelocity * deadBand(-m_rightStick.getY());
-    
 
     // the drive system is set up to target speed, so - we want to convert this to a speed which will be a range of full reverse to full forward or ~ -3m/s to 3m/s
    //   m_driveSubsystem.drive(-m_leftStick.getY(),-m_rightStick.getY());
