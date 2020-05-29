@@ -43,24 +43,40 @@ public class DriveSubsystem extends SubsystemBase {
   DifferentialDriveOdometry m_odometry;
   DifferentialDriveOdometry m_homeOdometry;
 
+  private static DriveSubsystem m_instance;
+
+  // private constructor to avoid client applications to use constructor
+
+  // static block initialization for exception handling
+  static {
+    try {
+      m_instance = new DriveSubsystem();
+    } catch (Exception e) {
+      throw new RuntimeException("Exception occured in creating singleton instance of DriveSubsystem");
+    }
+  }
+
+  public static DriveSubsystem getInstance() {
+    return m_instance;
+  }
+
   /**
    * Creates a new DriveSystem.
    */
-  public DriveSubsystem() {
+  private DriveSubsystem() {
     super();
 
     Pose2d currentPose = new Pose2d(0.0, 0.0, new Rotation2d());
     m_odometry = new DifferentialDriveOdometry(new Rotation2d(0.0), currentPose);
     Pose2d homePose = new Pose2d(0.0, 0.0, new Rotation2d());
     m_homeOdometry = new DifferentialDriveOdometry(new Rotation2d(0.0), homePose);
-    
 
   }
 
   public void initControlSystem() {
 
     System.out.println("[DriveSubsystem.initControlSystem]");
-    
+
     zeroSensors();
 
     m_rightFront.configFactoryDefault();
@@ -108,13 +124,14 @@ public class DriveSubsystem extends SubsystemBase {
     m_leftFront.config_kI(0, Constants.kGains_Distanc.kI, Constants.kTimeoutMs);
     m_leftFront.config_kD(0, Constants.kGains_Distanc.kD, Constants.kTimeoutMs);
 
-  //  m_rightFront.configMotionAcceleration(Constants.kMaxTelopAccelerationInSensorUnits, Constants.kTimeoutMs);
-  //  m_leftFront.configMotionAcceleration(Constants.kMaxTelopAccelerationInSensorUnits, Constants.kTimeoutMs);
+    // m_rightFront.configMotionAcceleration(Constants.kMaxTelopAccelerationInSensorUnits,
+    // Constants.kTimeoutMs);
+    // m_leftFront.configMotionAcceleration(Constants.kMaxTelopAccelerationInSensorUnits,
+    // Constants.kTimeoutMs);
 
     zeroSensors();
 
   }
-
 
   /**
    * sets the robots location on the field to the specified settings. This method
@@ -137,7 +154,7 @@ public class DriveSubsystem extends SubsystemBase {
     m_odometry.resetPosition(position, angle);
 
     Rotation2d homeAngle = new Rotation2d(rad);
-    
+
     Pose2d homePosition = new Pose2d(x, y, angle);
     m_homeOdometry.resetPosition(homePosition, homeAngle);
   }
@@ -188,9 +205,9 @@ public class DriveSubsystem extends SubsystemBase {
 
   public void drive(double left, double right) {
 
-    //speed comes in in meters/sec needs to be ticks/100ms
+    // speed comes in in meters/sec needs to be ticks/100ms
 
-    double leftVelocity = left * Constants.kEncoderTicksPerMeter * .1; 
+    double leftVelocity = left * Constants.kEncoderTicksPerMeter * .1;
     double rightVelocity = right * Constants.kEncoderTicksPerMeter * .1;
     m_leftFront.set(ControlMode.Velocity, leftVelocity);
     m_rightFront.set(ControlMode.Velocity, rightVelocity);
@@ -209,22 +226,7 @@ public class DriveSubsystem extends SubsystemBase {
     return m_rightFront.getClosedLoopError();
   }
 
-  public void driveToTarget(int rightTarget, int targetEncoderDistance) {
 
-    m_rightFront.selectProfileSlot(Constants.kSlot_Distanc, Constants.PID_PRIMARY);
-    m_rightFront.selectProfileSlot(Constants.kSlot_Turning, Constants.PID_TURN);
-
-    if (false) {
-      m_rightFront.set(ControlMode.MotionMagic, rightTarget, DemandType.AuxPID, 0);
-      m_leftFront.follow(m_rightFront, FollowerType.AuxOutput1);
-    } else {
-      m_rightFront.set(ControlMode.MotionMagic, rightTarget);
-      m_leftFront.follow(m_rightFront);
-    }
-
-    System.out.println("[drivesubsystem] - drive to target " + rightTarget + " " + targetEncoderDistance);
-
-  }
 
   public int getLeftEncoder() {
     return m_leftFront.getSelectedSensorPosition();
@@ -244,12 +246,7 @@ public class DriveSubsystem extends SubsystemBase {
 
   public double getAngle() {
 
-     return m_navXMP.getYaw();
-
-    
-
-
-    //return m_navXMP.getAngle();
+    return m_navXMP.getYaw();
   }
 
   @Override
@@ -277,7 +274,6 @@ public class DriveSubsystem extends SubsystemBase {
     double rad = Units.degreesToRadians(-getAngle());
     Rotation2d gyroAngle = new Rotation2d(rad);
 
-    
     double leftEncoder = m_leftFront.getSelectedSensorPosition() / Constants.kEncoderTicksPerMeter;
     double rightEncoder = m_rightFront.getSelectedSensorPosition() / Constants.kEncoderTicksPerMeter;
 
@@ -295,10 +291,7 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("Field heading", angle);
 
     float compassHeading = m_navXMP.getCompassHeading();
-    SmartDashboard.putNumber ("Compass", compassHeading);
-
-    
-
+    SmartDashboard.putNumber("Compass", compassHeading);
 
     SmartDashboard.putNumber("left distance", leftWheelDistance());
     SmartDashboard.putNumber("right distance", rightWheelDistance());
@@ -307,7 +300,6 @@ public class DriveSubsystem extends SubsystemBase {
     SmartDashboard.putNumber("right velocity", m_rightFront.getSelectedSensorVelocity());
 
     SmartDashboard.putNumber("gyro", getAngle());
-
 
   }
 }

@@ -19,22 +19,26 @@ public class DriveSquareCommand extends SequentialCommandGroup {
   /**
    * Creates a new DriveSquareCommand.
    */
-  public DriveSquareCommand(DriveSubsystem subsystem) {
+
+  public DriveSquareCommand() {
     // Add your commands in the super() call, e.g.
     // super(new FooCommand(), new BarCommand());
+   
+    /*
+    DriveSubsystem system = DriveSubsystem.getInstance();
     super(
-      new ResetGyroCommand(subsystem),
+//      new ResetGyroCommand(subsystem),
+
       new WaitCommand(1),
+      DrivePathCommand.buildStraightCommand(),
+      
       // new DriveToDistanceCommand(subsystem, 30),
       // new RamseteDriveToDistanceCommand(subsystem, 10),
       new WaitCommand(2)
     //  new TurnToHeadingCommand(subsystem, 90)
-     /* new DriveToDistanceCommand(subsystem, 2),
-      new TurnToHeadingCommand(subsystem, 180),
-      new DriveToDistanceCommand(subsystem, 2),
-      new TurnToHeadingCommand(subsystem, 270),
-      new DriveToDistanceCommand(subsystem, 2),
-      new TurnToHeadingCommand(subsystem, 0)*/
-    );
+      );
+
+    */
+
   }
 }

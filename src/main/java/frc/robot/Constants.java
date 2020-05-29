@@ -7,8 +7,9 @@
 
 package frc.robot;
 
-
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
+import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
+import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveKinematicsConstraint;
 import edu.wpi.first.wpilibj.util.Units;
 
 /**
@@ -172,11 +173,14 @@ public final class Constants {
 
 
 	public static final double kTrackwidthMeters = (22.0 * .0254); 
-	public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
 	
 	public static final double kMaxTelopVelocity = Units.feetToMeters(9.0); // 12 feet per second - needs to match the current gearbox capability
 	public static final double kMaxTelopAcceleration = Units.feetToMeters(3.0); // 12 meters per second
 	public static final int kMaxTelopAccelerationInSensorUnits = (int) ((kMaxTelopAcceleration / kEncoderTicksPerMeter) * 0.1);  // the ten is to get it to 100ms instead of a second
+
+	public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
+	public static final DifferentialDriveKinematicsConstraint kDriveConstraint = new DifferentialDriveKinematicsConstraint(kDriveKinematics,kAutonomousMaxSpeedMetersPerSecond);
+    public static final TrajectoryConfig kConfig = new TrajectoryConfig(kAutonomousMaxSpeedMetersPerSecond,kAutoMaxAccelerationMetersPerSecondSquared).setKinematics(Constants.kDriveKinematics).addConstraint(kDriveConstraint);
 
 
 }
