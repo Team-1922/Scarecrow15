@@ -9,6 +9,9 @@ package frc.robot.commands;
 
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.Constants;
+import frc.robot.Components.Vision;
+
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj.smartdashboard.*;
@@ -20,6 +23,7 @@ import edu.wpi.first.wpilibj.smartdashboard.*;
 public class FollowImageCommand extends CommandBase {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
   private final DriveSubsystem m_driveSubsystem;
+  private final Vision m_vision;  // reference to the vision processing component
 
 
   /**
@@ -27,9 +31,10 @@ public class FollowImageCommand extends CommandBase {
    *
    * @param subsystem The subsystem used by this command.
    */
-  public FollowImageCommand(DriveSubsystem subsystem) {
+  public FollowImageCommand(DriveSubsystem subsystem, Vision vision) {
 
     m_driveSubsystem = subsystem;
+    m_vision = vision;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(m_driveSubsystem);
   }
@@ -37,6 +42,7 @@ public class FollowImageCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
+    m_vision.enableVisionMode();
 
   }
 
@@ -55,6 +61,7 @@ public class FollowImageCommand extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
+    m_vision.enableCameraMode();
 
   }
 

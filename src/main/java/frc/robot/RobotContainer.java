@@ -16,11 +16,12 @@ import frc.robot.commands.TankDriveCommand;
 import frc.robot.commands.DrivePathCommand;
 import frc.robot.commands.DriveSquareCommand;
 import frc.robot.commands.EnableLED;
+import frc.robot.commands.FollowImageCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.FeedbackSubsystem;
 import edu.wpi.first.wpilibj2.command.*;
 import edu.wpi.first.wpilibj2.command.Command;
-
+import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants;
 import frc.robot.Components.BeamBreak;
 import frc.robot.Components.Vision;
@@ -43,10 +44,12 @@ public class RobotContainer {
   private final XboxController m_XBoxController = new XboxController(Constants.cXBoxController);
   private final Vision m_vision = new Vision();
   private final BeamBreak m_beamBreak = new BeamBreak(Constants.kBeamBreak);
-
+  
   private final TankDriveCommand m_tankDriveCommand = new TankDriveCommand(m_driveSubsystem, m_leftJoystick,m_rightJoystick);
 
   private SendableChooser<Command> m_autoChooser = new SendableChooser<Command>();
+  FollowImageCommand m_visionServo = new FollowImageCommand(m_driveSubsystem, m_vision);
+
 
   /*
    * private final FollowImageCommand m_followImageCommand = new
@@ -113,11 +116,10 @@ public class RobotContainer {
    */
   private void configureButtonBindings() {
 
-    /*
-     * new JoystickButton(m_XBoxController,
-     * Constants.cXBoxAButton).toggleWhenPressed(m_followImageCommand);
-     * 
-     * new JoystickButton(m_XBoxController, Constants.cXBoxBButton).whenPressed(new
+    
+      new JoystickButton(m_XBoxController, Constants.cXBoxAButton).whileHeld(m_visionServo);
+      
+     /* new JoystickButton(m_XBoxController, Constants.cXBoxBButton).whenPressed(new
      * DriveToDistanceCommand(m_driveSubsystem, 10));
      * 
      * new JoystickButton(m_XBoxController, Constants.cXBoxYButton).whenPressed(new

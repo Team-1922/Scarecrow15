@@ -56,7 +56,7 @@ public double ta() {
  }
 
 
- public void visionMode() {
+ public void enableVisionMode() {
   m_ledMode.setNumber(Constants.cLLLedOn);
   m_cameraMode.setNumber(Constants.cLLCameraVisionProcess);
  }
