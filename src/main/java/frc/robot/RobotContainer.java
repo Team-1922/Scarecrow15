@@ -17,6 +17,7 @@ import frc.robot.commands.DrivePathCommand;
 import frc.robot.commands.DriveSquareCommand;
 import frc.robot.commands.EnableLED;
 import frc.robot.commands.FollowImageCommand;
+import frc.robot.commands.PositionResetCommand;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.subsystems.FeedbackSubsystem;
 import edu.wpi.first.wpilibj2.command.*;
@@ -25,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Constants;
 import frc.robot.Components.BeamBreak;
 import frc.robot.Components.Vision;
+import frc.robot.Components.Range;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -44,11 +46,13 @@ public class RobotContainer {
   private final XboxController m_XBoxController = new XboxController(Constants.cXBoxController);
   private final Vision m_vision = new Vision();
   private final BeamBreak m_beamBreak = new BeamBreak(Constants.kBeamBreak);
+  private final Range m_range = new Range();
   
-  private final TankDriveCommand m_tankDriveCommand = new TankDriveCommand(m_driveSubsystem, m_leftJoystick,m_rightJoystick);
+  private final TankDriveCommand m_tankDriveCommand = new TankDriveCommand(m_driveSubsystem, m_leftJoystick,m_rightJoystick, m_vision);
 
   private SendableChooser<Command> m_autoChooser = new SendableChooser<Command>();
-  FollowImageCommand m_visionServo = new FollowImageCommand(m_driveSubsystem, m_vision);
+  FollowImageCommand m_visionServo = new FollowImageCommand(m_driveSubsystem, m_vision, m_leftJoystick);
+  PositionResetCommand m_visionPos = new PositionResetCommand(m_driveSubsystem, m_vision);
 
 
   /*
@@ -117,8 +121,12 @@ public class RobotContainer {
   private void configureButtonBindings() {
 
     
-      new JoystickButton(m_XBoxController, Constants.cXBoxAButton).whileHeld(m_visionServo);
+      //new JoystickButton(m_XBoxController, Constants.cXBoxAButton).whileHeld(m_visionServo);
       
+      new JoystickButton(m_leftJoystick, 4).whileHeld(m_visionServo);
+
+      new JoystickButton(m_leftJoystick, 5).whileHeld(m_visionPos);
+
      /* new JoystickButton(m_XBoxController, Constants.cXBoxBButton).whenPressed(new
      * DriveToDistanceCommand(m_driveSubsystem, 10));
      * 

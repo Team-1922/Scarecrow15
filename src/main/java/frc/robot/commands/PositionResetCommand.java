@@ -7,22 +7,25 @@
 
 package frc.robot.commands;
 
-import frc.robot.Constants;
 import frc.robot.subsystems.DriveSubsystem;
+import frc.robot.Constants;
 import frc.robot.Components.Vision;
+
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj.smartdashboard.*;
+import edu.wpi.first.wpilibj.util.Units;
+
 
 
 /**
  * An example command that uses an example subsystem.
  */
-public class TankDriveCommand extends CommandBase {
+public class PositionResetCommand extends CommandBase {
   @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.SingularField"})
   private final DriveSubsystem m_driveSubsystem;
-  private final Joystick m_leftStick;
-  private final Joystick m_rightStick;
   private final Vision m_vision;  // reference to the vision processing component
 
   /**
@@ -30,11 +33,9 @@ public class TankDriveCommand extends CommandBase {
    *
    * @param subsystem The subsystem used by this command.
    */
-  public TankDriveCommand(DriveSubsystem subsystem, Joystick leftStick, Joystick rightStick, Vision vision) {
+  public PositionResetCommand(DriveSubsystem subsystem, Vision vision) {
 
     m_driveSubsystem = subsystem;
-    m_leftStick = leftStick;
-    m_rightStick = rightStick;
     m_vision = vision;
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(m_driveSubsystem);
@@ -43,39 +44,62 @@ public class TankDriveCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    // m_driveSubsystem.initControlSystem();
     m_vision.enableVisionMode();
   }
 
-  double deadBand(double value) {
 
-    double val = value * Math.abs(value);  // try to smooth it out a little
-    if (Math.abs(val) < 0.05) {
-      return 0.0;
-    }
-    else {
-      return val;
-    }
-
-  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    
+    /*
+    double tx = m_vision.tx();
+    double ty = m_vision.ty();
+    double thor = m_vision.thor();
+    double tvert = m_vision.tvert();
+    double ts = m_vision.ts();
+    //double ta = m_vision.ta();
 
-    double left = Constants.kMaxTelopVelocity * deadBand(-m_leftStick.getY());
-    double right  = Constants.kMaxTelopVelocity * deadBand(-m_rightStick.getY());
+    double targetHeight = 17;
+    double targetDistanceFromGround = 3;
+    double centerOfTarget = targetDistanceFromGround + (targetHeight/2.0);
+    double centerOfLowTarget = 3.5;
+    double limelightDistanceFromGround = 8;
+    double tyRadians = Units.degreesToRadians(ty);
+    double limelightAngle = Units.degreesToRadians(-3.5);
+    double distanceToTarget = (centerOfLowTarget - limelightDistanceFromGround) / Math.tan(tyRadians + limelightAngle);
 
-    // the drive system is set up to target speed, so - we want to convert this to a speed which will be a range of full reverse to full forward or ~ -3m/s to 3m/s
-   //   m_driveSubsystem.drive(-m_leftStick.getY(),-m_rightStick.getY());
-   m_driveSubsystem.drive (left, right);
 
+    SmartDashboard.putNumber("DistanceToTarget (in)", distanceToTarget);
+    Pose2d newEstimatedPose;
+    Rotation2d newEstimatedAngle;
+
+
+    // Corner of the carpet is (0,0)
+    // Length of carepet is 129in
+    // Width of carpet is 94in
+    // Target is at 50in 
+    // Target is at (50in, 129in)
+    // Target is 39in wide & 17in high
+
+
+    //  m_driveSubsystem.updateOdometry(newEstimatedPose, newEstimatedAngle);
+
+      SmartDashboard.putNumber("tx", tx);
+      SmartDashboard.putNumber("ty", ty);
+      SmartDashboard.putNumber("thor", thor);
+      SmartDashboard.putNumber("tvert", tvert);
+      SmartDashboard.putNumber("ts", ts);
+      */
+      
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
     m_vision.enableCameraMode();
+
   }
 
   // Returns true when the command should end.

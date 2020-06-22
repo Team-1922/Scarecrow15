@@ -212,10 +212,10 @@ public class DriveSubsystem extends SubsystemBase {
     m_leftFront.set(ControlMode.Velocity, leftVelocity);
     m_rightFront.set(ControlMode.Velocity, rightVelocity);
 
-    SmartDashboard.putNumber("left Speed m/s", left);
-    SmartDashboard.putNumber("right Speed m/s", right);
-    SmartDashboard.putNumber("left Speed ticks/100ms", leftVelocity);
-    SmartDashboard.putNumber("right Speed ticks/100ms", rightVelocity);
+    //SmartDashboard.putNumber("left Speed m/s", left);
+    //SmartDashboard.putNumber("right Speed m/s", right);
+    //SmartDashboard.putNumber("left Speed ticks/100ms", leftVelocity);
+    //SmartDashboard.putNumber("right Speed ticks/100ms", rightVelocity);
   }
 
   public int getLeftError() {
@@ -278,7 +278,14 @@ public class DriveSubsystem extends SubsystemBase {
     double rightEncoder = m_rightFront.getSelectedSensorPosition() / Constants.kEncoderTicksPerMeter;
 
     m_odometry.update(gyroAngle, leftEncoder, rightEncoder);
+  }
 
+  public void updateOdometry(Pose2d currentPose, Rotation2d rotation){
+    DifferentialDriveOdometry tempOdometry = new DifferentialDriveOdometry(rotation, currentPose);
+
+    //SmartDashboard.putNumber("Field X Calculated", currentPose.getTranslation().getX());
+    //SmartDashboard.putNumber("Field Y Calculated", currentPose.getTranslation().getY());
+    //SmartDashboard.putNumber("Field Heading Calculated", rotation.getDegrees());
   }
 
   public void updateDashboard() {
@@ -286,20 +293,20 @@ public class DriveSubsystem extends SubsystemBase {
     double x = getPositionOnField().getTranslation().getX();
     double y = getPositionOnField().getTranslation().getY();
     double angle = getPositionOnField().getRotation().getDegrees();
-    SmartDashboard.putNumber("Field X", x);
-    SmartDashboard.putNumber("Field Y", y);
-    SmartDashboard.putNumber("Field heading", angle);
+    //SmartDashboard.putNumber("Field X", x);
+    //SmartDashboard.putNumber("Field Y", y);
+    //SmartDashboard.putNumber("Field heading", angle);
 
     float compassHeading = m_navXMP.getCompassHeading();
-    SmartDashboard.putNumber("Compass", compassHeading);
+    //SmartDashboard.putNumber("Compass", compassHeading);
 
-    SmartDashboard.putNumber("left distance", leftWheelDistance());
-    SmartDashboard.putNumber("right distance", rightWheelDistance());
+    //SmartDashboard.putNumber("left distance", leftWheelDistance());
+    //SmartDashboard.putNumber("right distance", rightWheelDistance());
 
-    SmartDashboard.putNumber("left velocity", m_leftFront.getSelectedSensorVelocity());
-    SmartDashboard.putNumber("right velocity", m_rightFront.getSelectedSensorVelocity());
+    //SmartDashboard.putNumber("left velocity", m_leftFront.getSelectedSensorVelocity());
+    //SmartDashboard.putNumber("right velocity", m_rightFront.getSelectedSensorVelocity());
 
-    SmartDashboard.putNumber("gyro", getAngle());
+    //SmartDashboard.putNumber("gyro", getAngle());
 
   }
 }

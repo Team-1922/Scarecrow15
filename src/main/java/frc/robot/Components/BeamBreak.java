@@ -84,11 +84,14 @@ public class BeamBreak extends AnalogInput {
     }
 
     public void report() {
-        SmartDashboard.putNumber("beam break", getAverageValue());
-        SmartDashboard.putNumber("floor", m_floor);
-        SmartDashboard.putNumber("ceiling", m_ceiling);
+
         
-        SmartDashboard.putBoolean("Beam Broken", broken());
+        //SmartDashboard.putNumber("beam break", getAverageValue());
+        //SmartDashboard.putNumber("floor", m_floor);
+        //SmartDashboard.putNumber("ceiling", m_ceiling);
+        
+        //SmartDashboard.putBoolean("Beam Broken", broken());
+        
     }
 
     public boolean broken() {
