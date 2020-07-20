@@ -41,12 +41,15 @@ public class DrivePathCommand extends RamseteCommand {
     addRequirements(DriveSubsystem.getInstance());
   }
 
+  /* 
   static public CommandBase buildHomeCommand() {
     Trajectory path = buildHomePath();
     return new DrivePathCommand(path).andThen(() -> DriveSubsystem.getInstance().stop());
 
   }
+*/
 
+ /*
   static public Trajectory buildHomePath() {
 
     Pose2d startPose = DriveSubsystem.getInstance().getPositionOnField();
@@ -60,7 +63,7 @@ public class DrivePathCommand extends RamseteCommand {
 
     return trajectory;
   }
-
+*/
   static public CommandBase buildStraightCommand() {
 
     Trajectory path = buildStraightPath(2);

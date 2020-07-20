@@ -14,6 +14,7 @@ import frc.robot.Components.Vision;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj.smartdashboard.*;
 import edu.wpi.first.wpilibj.util.Units;
@@ -52,28 +53,68 @@ public class PositionResetCommand extends CommandBase {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+
+    /*
+
+The similar triangle thing may be a false start. It's a nice solution for when you're pointed directly at the thing you're using to range but as soon as you're not it all falls apart.
+
+I think you can do a bit better by using tx and heading to get the angle to the target off the vertical and then use your distance as the hypotenuse of the triangle. Then you just get (remembering that our x,y directions are flipped from what you'd expect) xDistanceFromTarget = distanceToTarget * sin(tx + heading) yDistanceFromTarget = distanceToTarget * cos(tx + heading)
+
+    //estimatedDistance is our distance to the target based on where our odometry thinks we are
+// we'll move along our heading vector some distance moveDistance 
+// tx_predicted is the tx we think we should be getting from limelight based on where our odometry thinks we are
+// actualDistance is the distance the limelight reports
+// tx is the tx the limelight reports
+moveDistance = (estimatedDistance - actualDistance*cos(tx - tx_predicted)) / cos(tx_predicted)
+
+Other approach:
+
+We have our distance (estimated Distance) and an angle (tx) to a known point (the target). Rather than calculating how to change our current position
+just translate from the target according to that vector.
+
+    */
+
+    Translation2d targetPosition = new Translation2d(Units.inchesToMeters(129), Units.inchesToMeters(51));
+
+    double limelightDistanceToCenterOfRobot = Units.inchesToMeters(m_vision.getDistanceFromTarget() + 12);
+    double angleToTarget = m_vision.tx();
+
+    Pose2d currentEstimatedPosition = m_driveSubsystem.getPositionOnField();
+    Rotation2d currentAngle = currentEstimatedPosition.getRotation(); // we'll assume this is correct
+
+    Translation2d baseVector = new Translation2d(limelightDistanceToCenterOfRobot, 0);
+    Rotation2d rotation = Rotation2d.fromDegrees(-(currentAngle.getDegrees() - angleToTarget + 180));
+    Translation2d targetToRobot = baseVector.rotateBy(rotation);
+
+    Translation2d robotPosition = targetPosition.plus(targetToRobot);
+
     
     /*
-    double tx = m_vision.tx();
-    double ty = m_vision.ty();
-    double thor = m_vision.thor();
-    double tvert = m_vision.tvert();
-    double ts = m_vision.ts();
-    //double ta = m_vision.ta();
+    The similar triangle thing may be a false start. It's a nice solution for when you're pointed directly at the thing you're using to range but as soon as you're not it all falls apart.
 
-    double targetHeight = 17;
-    double targetDistanceFromGround = 3;
-    double centerOfTarget = targetDistanceFromGround + (targetHeight/2.0);
-    double centerOfLowTarget = 3.5;
-    double limelightDistanceFromGround = 8;
-    double tyRadians = Units.degreesToRadians(ty);
-    double limelightAngle = Units.degreesToRadians(-3.5);
-    double distanceToTarget = (centerOfLowTarget - limelightDistanceFromGround) / Math.tan(tyRadians + limelightAngle);
+    Translation2d targetPosition = new Translation2d(Units.inchesToMeters(129), Units.inchesToMeters(51));
 
+    double limelightDistanceToTarget = m_vision.getDistanceFromTarget();
+    double odometryDistanceToTarget = limelightDistanceToTarget + Units.inchesToMeters(12);
 
-    SmartDashboard.putNumber("DistanceToTarget (in)", distanceToTarget);
-    Pose2d newEstimatedPose;
-    Rotation2d newEstimatedAngle;
+    Pose2d currentEstimatedPosition = m_driveSubsystem.getPositionOnField();
+    Rotation2d currentAngle = currentEstimatedPosition.getRotation(); // we'll assume this is correct
+    Translation2d currentPosition = currentEstimatedPosition.getTranslation();
+
+    double estimatedDistance = currentPosition.getDistance(targetPosition);
+
+    double scalingFactor = estimatedDistance / odometryDistanceToTarget;
+
+    double xDistFromTarget = (targetPosition.getX() - currentPosition.getX()) * scalingFactor;
+    double yDistFromTarget = (targetPosition.getY() - currentPosition.getY()) * scalingFactor;
+    
+    double xPos = targetPosition.getX() - xDistFromTarget;
+    double yPos = targetPosition.getY() - yDistFromTarget;
+
+    Pose2d newEstimatedPose = new Pose2d(xPos, yPos, currentAngle);
+*/ 
+    SmartDashboard.putNumber("guessed X", Units.metersToInches(robotPosition.getX()));
+    SmartDashboard.putNumber("guessed Y", Units.metersToInches(robotPosition.getY()));
 
 
     // Corner of the carpet is (0,0)
@@ -84,14 +125,7 @@ public class PositionResetCommand extends CommandBase {
     // Target is 39in wide & 17in high
 
 
-    //  m_driveSubsystem.updateOdometry(newEstimatedPose, newEstimatedAngle);
-
-      SmartDashboard.putNumber("tx", tx);
-      SmartDashboard.putNumber("ty", ty);
-      SmartDashboard.putNumber("thor", thor);
-      SmartDashboard.putNumber("tvert", tvert);
-      SmartDashboard.putNumber("ts", ts);
-      */
+    m_driveSubsystem.updateOdometry(new Pose2d(robotPosition, currentAngle), currentAngle);
       
   }
 

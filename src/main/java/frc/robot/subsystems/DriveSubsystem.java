@@ -18,6 +18,9 @@ import edu.wpi.first.wpilibj.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import com.kauailabs.navx.frc.*;
 
 import frc.robot.Constants;
@@ -41,7 +44,8 @@ public class DriveSubsystem extends SubsystemBase {
   private PigeonIMU m_imu = new PigeonIMU(Constants.kIMU);
 
   DifferentialDriveOdometry m_odometry;
-  DifferentialDriveOdometry m_homeOdometry;
+  Pose2d m_estimatedPosition;
+
 
   private static DriveSubsystem m_instance;
 
@@ -66,10 +70,9 @@ public class DriveSubsystem extends SubsystemBase {
   private DriveSubsystem() {
     super();
 
-    Pose2d currentPose = new Pose2d(0.0, 0.0, new Rotation2d());
+    Pose2d currentPose = new Pose2d(Units.inchesToMeters(12), Units.inchesToMeters(12), new Rotation2d());
     m_odometry = new DifferentialDriveOdometry(new Rotation2d(0.0), currentPose);
-    Pose2d homePose = new Pose2d(0.0, 0.0, new Rotation2d());
-    m_homeOdometry = new DifferentialDriveOdometry(new Rotation2d(0.0), homePose);
+    m_estimatedPosition = new Pose2d(0.0, 0.0, new Rotation2d());
 
   }
 
@@ -155,8 +158,7 @@ public class DriveSubsystem extends SubsystemBase {
 
     Rotation2d homeAngle = new Rotation2d(rad);
 
-    Pose2d homePosition = new Pose2d(x, y, angle);
-    m_homeOdometry.resetPosition(homePosition, homeAngle);
+    m_estimatedPosition = new Pose2d(x, y, angle);
   }
 
   public void IMUInit() {
@@ -253,6 +255,7 @@ public class DriveSubsystem extends SubsystemBase {
   public void periodic() {
 
     updateOdometry();
+    updatedEstimatedPosition();
     updateDashboard();
 
   }
@@ -261,8 +264,8 @@ public class DriveSubsystem extends SubsystemBase {
     return m_odometry.getPoseMeters();
   }
 
-  public Pose2d getHomePosition() {
-    return m_homeOdometry.getPoseMeters();
+  public Pose2d getEstimatedPosition() {
+    return m_estimatedPosition;
   }
 
   public void updateOdometry() {
@@ -280,6 +283,13 @@ public class DriveSubsystem extends SubsystemBase {
     m_odometry.update(gyroAngle, leftEncoder, rightEncoder);
   }
 
+  public void updatedEstimatedPosition()
+  {
+  
+    // double rad = Units.degreesToRadians(-tx());
+    
+  }
+
   public void updateOdometry(Pose2d currentPose, Rotation2d rotation){
     DifferentialDriveOdometry tempOdometry = new DifferentialDriveOdometry(rotation, currentPose);
 
@@ -293,11 +303,16 @@ public class DriveSubsystem extends SubsystemBase {
     double x = getPositionOnField().getTranslation().getX();
     double y = getPositionOnField().getTranslation().getY();
     double angle = getPositionOnField().getRotation().getDegrees();
-    //SmartDashboard.putNumber("Field X", x);
-    //SmartDashboard.putNumber("Field Y", y);
-    //SmartDashboard.putNumber("Field heading", angle);
+    SmartDashboard.putNumber("Field X", Units.metersToInches(x));
+    SmartDashboard.putNumber("Field Y", Units.metersToInches(y));
+    SmartDashboard.putNumber("Field heading", angle);
 
     float compassHeading = m_navXMP.getCompassHeading();
+
+    NetworkTable table = NetworkTableInstance.getDefault().getTable("OzRam");
+    NetworkTableEntry tableDistanceToTarget = table.getEntry("compass Heading");
+    tableDistanceToTarget.setDouble(compassHeading);
+
     //SmartDashboard.putNumber("Compass", compassHeading);
 
     //SmartDashboard.putNumber("left distance", leftWheelDistance());

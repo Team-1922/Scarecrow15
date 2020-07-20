@@ -16,15 +16,26 @@ import frc.robot.Constants;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.AnalogInput;
+import edu.wpi.first.wpilibj.Ultrasonic;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
+
 
 public class Range extends SubsystemBase {
 
   private TimeOfFlight m_leftTOF = new TimeOfFlight(Constants.kLeftTOF);
   private TimeOfFlight m_rightTOF = new TimeOfFlight(Constants.kRightTOF);
+  // private Ultrasonic m_ultrasonic = new Ultrasonic (1,2);
+  private final AnalogInput m_ultrasonic = new AnalogInput(1);
 
   private double m_leftLast = -1.0;
   private double m_rightLast = -1.0;
+
+  //private static final double kValueToInches = 0.125;
+  // private static final double kValueToInches = (21.0 * 12) / 4095.0; // max value at 21 feet
+  private static final double kValueToInches = (41) / 530.0; // max value at 21 feet
+
 
   /**
    * Creates a new DriveSystem.
@@ -33,7 +44,10 @@ public class Range extends SubsystemBase {
     super();
     m_leftTOF.setRangingMode(RangingMode.Medium, Constants.kTOFTimingSampling);
     m_rightTOF.setRangingMode(RangingMode.Medium, Constants.kTOFTimingSampling);
+    // m_ultrasonic.setAutomaticMode(true);
 
+   // SmartDashboard.putData(m_ultrasonic);
+    
 
     register();
 
@@ -78,6 +92,13 @@ public class Range extends SubsystemBase {
     NetworkTableEntry right = table.getEntry("TOFRight");
     right.setDouble(Units.metersToInches(getRightTOFDistance()));
 
+    NetworkTableEntry ultrasonic = table.getEntry("UltrasonicDistance");
+    double currentDistance = m_ultrasonic.getValue() * kValueToInches;
+    ultrasonic.setDouble(currentDistance );
+    NetworkTableEntry ultrasonicVoltage = table.getEntry("UltrasonicVoltage");
+    ultrasonicVoltage.setDouble(m_ultrasonic.getValue());
+
+    
 
 
 

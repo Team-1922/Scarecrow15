@@ -9,6 +9,8 @@ package frc.robot.Components;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
+import java.util.ArrayList;
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -41,6 +43,8 @@ public class Vision extends SubsystemBase {
   private NetworkTableEntry m_ledMode = table.getEntry("ledMode");
   private NetworkTableEntry m_cameraMode = table.getEntry("camMode");
 
+  private CalibrationMap m_calibrationMap;
+
   /**
    * Creates a new DriveSystem.
    */
@@ -49,6 +53,7 @@ public class Vision extends SubsystemBase {
 
     enableCameraMode();
     register();
+    calibrate();
   }
 
   public double tx() {
@@ -90,21 +95,65 @@ public class Vision extends SubsystemBase {
     m_cameraMode.setNumber(Constants.cLLCameraVisionProcess);
   }
 
-  @Override
-  public void periodic() {
+  // This function dosen't actually do anything right now, it's where we'll document our calibration procedure
+  public void calibrate()
+  {
+    ArrayList<CalibrationPoint> calibrationPoints = new ArrayList<CalibrationPoint>();
+    double targetHeight = ((26.0 - 9.0) / 2.0) + 9.0;
 
+    double limelightHeight = 8;
+    double centerAboveLimelight = targetHeight - limelightHeight;
+
+
+    double farCalibrationDistance = 104; // back of the carpet
+    double farMeasuredTy = 7.7;
+
+    double calculatedFarTy = Math.atan(centerAboveLimelight / farCalibrationDistance);
+    double farOffset = farMeasuredTy - Units.radiansToDegrees(calculatedFarTy);
+
+    CalibrationPoint farPoint = new CalibrationPoint(farCalibrationDistance, farOffset);
+
+
+    double midCalibrationDistance = 74;
+    double midMeasuredTy = 11.11;
+
+    double calculatedMidTy = Math.atan(centerAboveLimelight / midCalibrationDistance);
+    double midOffset = midMeasuredTy - Units.radiansToDegrees(calculatedMidTy);
+
+    CalibrationPoint midPoint = new CalibrationPoint(midCalibrationDistance, midOffset);
+
+
+    double closeCalibrationDistance = 49;
+    double closeMeasuredTy = 13.6;
+
+    double calculatedCloseTy = Math.atan(centerAboveLimelight / closeCalibrationDistance);
+    double closeOffset = closeMeasuredTy - Units.radiansToDegrees(calculatedCloseTy);
+
+    CalibrationPoint closePoint = new CalibrationPoint(closeCalibrationDistance, closeOffset);
+
+    calibrationPoints.add(closePoint);
+    calibrationPoints.add(midPoint);
+    calibrationPoints.add(farPoint);
+    m_calibrationMap = new CalibrationMap(calibrationPoints);
+  }
+
+  public double getDistanceFromTarget()
+  {
     // calculate the distance to the target and write it to the network table in
     // inches
 
-    double targetHeight = ((27.0 - 10.0) / 2.0) + 10.0;
+    //bottom edge is 9 top is 26
 
-    double centerOfTarget = targetHeight;
-    double calibrationDistanceFromTarget = 83.0;
+
+    double targetHeight = ((26.0 - 9.0) / 2.0) + 9.0;
 
     double limelightHeight = 8;
     double centerAboveLimelight = targetHeight - limelightHeight;
     //double calibrationCrossHairY = 8.75;
-    double limelightAngle = 2.4; //scientifically calculated
+    //double limelightAngle = 2.4; //scientifically calculated 7/6/2020 - 3.8
+    
+    //TODO: This should use our "predicted" distance from target from the odometry
+    double limelightAngle = m_calibrationMap.getOffset(0); //Fix this
 
     double angleAboveLimelight = ty();
     double angleAboveHorizontal = angleAboveLimelight - limelightAngle; //subtraction because limelight is pointed down
@@ -123,7 +172,11 @@ public class Vision extends SubsystemBase {
     NetworkTable table = NetworkTableInstance.getDefault().getTable("OzRam");
     NetworkTableEntry tableDistanceToTarget = table.getEntry("DistanceToTarget");
     tableDistanceToTarget.setDouble(distanceToTarget);
+    return distanceToTarget;
+  }
 
-
+  @Override
+  public void periodic() {
+    getDistanceFromTarget();
   }
 }

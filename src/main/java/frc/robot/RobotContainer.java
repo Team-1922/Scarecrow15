@@ -90,6 +90,7 @@ public class RobotContainer {
   }
 
   public void teleopInit() {
+    m_driveSubsystem.zeroPose();
     m_feedbackSubsystem.enableLED(true);
     m_driveSubsystem.setDefaultCommand(m_tankDriveCommand);
   }
