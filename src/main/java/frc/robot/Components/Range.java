@@ -31,6 +31,8 @@ public class Range extends SubsystemBase {
   private TimeOfFlight m_rightTOF = new TimeOfFlight(Constants.kRightTOF);
 
   // construct a default Kalman filter - 
+  // stubbing out the Kalman filter code
+  // really making it work now
  // private KalmanFilter m_ultrasonicKalmanFilter = new KalmanFilter();
 
   // 
