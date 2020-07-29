@@ -274,13 +274,13 @@ NetworkTableEntry transZ = table.getEntry("TransZ");
 transZ.setDouble(values[2]);
 
 
-NetworkTableEntry pitch = table.getEntry("pitch");
+NetworkTableEntry pitch = table.getEntry("Pitch");
 pitch.setDouble(values[3]);
 
-NetworkTableEntry yaw = table.getEntry("yaw");
+NetworkTableEntry yaw = table.getEntry("Yaw");
 yaw.setDouble(values[4]);
 
-NetworkTableEntry roll = table.getEntry("roll");
+NetworkTableEntry roll = table.getEntry("Roll");
 roll.setDouble(values[5]);
 
 
