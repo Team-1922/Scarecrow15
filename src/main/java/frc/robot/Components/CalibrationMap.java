@@ -19,4 +19,9 @@ public class CalibrationMap
         //TODO: Find a library for this
         return m_calibrationPoints.get(0).offset;
     }
+
+    public double getNoGyroOffset()
+    {
+        return m_calibrationPoints.get(1).offset;
+    }
 }

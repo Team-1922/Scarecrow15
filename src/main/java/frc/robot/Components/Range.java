@@ -11,6 +11,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import com.playingwithfusion.*;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
+
+import org.opencv.video.KalmanFilter;
+
 import frc.robot.Constants;
 
 import edu.wpi.first.networktables.NetworkTable;
@@ -26,15 +29,21 @@ public class Range extends SubsystemBase {
 
   private TimeOfFlight m_leftTOF = new TimeOfFlight(Constants.kLeftTOF);
   private TimeOfFlight m_rightTOF = new TimeOfFlight(Constants.kRightTOF);
-  // private Ultrasonic m_ultrasonic = new Ultrasonic (1,2);
-  private final AnalogInput m_ultrasonic = new AnalogInput(1);
+
+  // construct a default Kalman filter - 
+ // private KalmanFilter m_ultrasonicKalmanFilter = new KalmanFilter();
+
+  // 
+
+  //private final AnalogInput m_ultrasonic = new AnalogInput(1);
 
   private double m_leftLast = -1.0;
   private double m_rightLast = -1.0;
 
   //private static final double kValueToInches = 0.125;
   // private static final double kValueToInches = (21.0 * 12) / 4095.0; // max value at 21 feet
-  private static final double kValueToInches = (41) / 530.0; // max value at 21 feet
+  private static final double kValueToInches = .052;  //  (41) / 530.0; // max value at 21 feet
+
 
 
   /**
@@ -92,12 +101,24 @@ public class Range extends SubsystemBase {
     NetworkTableEntry right = table.getEntry("TOFRight");
     right.setDouble(Units.metersToInches(getRightTOFDistance()));
 
-    NetworkTableEntry ultrasonic = table.getEntry("UltrasonicDistance");
-    double currentDistance = m_ultrasonic.getValue() * kValueToInches;
-    ultrasonic.setDouble(currentDistance );
-    NetworkTableEntry ultrasonicVoltage = table.getEntry("UltrasonicVoltage");
-    ultrasonicVoltage.setDouble(m_ultrasonic.getValue());
+    // m_kalmanFilter 
 
+
+
+
+  //  NetworkTableEntry ultrasonic = table.getEntry("UltrasonicDistance");
+  //  double currentDistance = m_ultrasonic.getValue() * kValueToInches;
+  //  ultrasonic.setDouble(currentDistance );
+  //  NetworkTableEntry ultrasonicVoltage = table.getEntry("UltrasonicVoltage");
+  //  ultrasonicVoltage.setDouble(m_ultrasonic.getValue());
+
+
+    NetworkTableEntry ultrasonic = table.getEntry("UltrasonicKalmandDistance");
+    double kalmanUltrasonicDistance = 12.0; // m_ultrasonic.getValue() * kValueToInches;
+    ultrasonic.setDouble(kalmanUltrasonicDistance );
+    // Kalman correct 
+
+    
     
 
 

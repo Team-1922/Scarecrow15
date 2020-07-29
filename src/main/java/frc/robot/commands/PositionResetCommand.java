@@ -74,9 +74,12 @@ just translate from the target according to that vector.
 
     */
 
-    Translation2d targetPosition = new Translation2d(Units.inchesToMeters(129), Units.inchesToMeters(51));
 
-    double limelightDistanceToCenterOfRobot = Units.inchesToMeters(m_vision.getDistanceFromTarget() + 12);
+
+    //  Translation2d targetPosition = new Translation2d(Units.inchesToMeters(129), Units.inchesToMeters(51));
+    Translation2d targetPosition = new Translation2d(Constants.kPowerPort.getTranslation().getX(), Constants.kPowerPort.getTranslation().getY());
+
+    double limelightDistanceToCenterOfRobot = Units.inchesToMeters(m_vision.getDistanceFromTarget()) + 12;
     double angleToTarget = m_vision.tx();
 
     Pose2d currentEstimatedPosition = m_driveSubsystem.getPositionOnField();
@@ -88,31 +91,6 @@ just translate from the target according to that vector.
 
     Translation2d robotPosition = targetPosition.plus(targetToRobot);
 
-    
-    /*
-    The similar triangle thing may be a false start. It's a nice solution for when you're pointed directly at the thing you're using to range but as soon as you're not it all falls apart.
-
-    Translation2d targetPosition = new Translation2d(Units.inchesToMeters(129), Units.inchesToMeters(51));
-
-    double limelightDistanceToTarget = m_vision.getDistanceFromTarget();
-    double odometryDistanceToTarget = limelightDistanceToTarget + Units.inchesToMeters(12);
-
-    Pose2d currentEstimatedPosition = m_driveSubsystem.getPositionOnField();
-    Rotation2d currentAngle = currentEstimatedPosition.getRotation(); // we'll assume this is correct
-    Translation2d currentPosition = currentEstimatedPosition.getTranslation();
-
-    double estimatedDistance = currentPosition.getDistance(targetPosition);
-
-    double scalingFactor = estimatedDistance / odometryDistanceToTarget;
-
-    double xDistFromTarget = (targetPosition.getX() - currentPosition.getX()) * scalingFactor;
-    double yDistFromTarget = (targetPosition.getY() - currentPosition.getY()) * scalingFactor;
-    
-    double xPos = targetPosition.getX() - xDistFromTarget;
-    double yPos = targetPosition.getY() - yDistFromTarget;
-
-    Pose2d newEstimatedPose = new Pose2d(xPos, yPos, currentAngle);
-*/ 
     SmartDashboard.putNumber("guessed X", Units.metersToInches(robotPosition.getX()));
     SmartDashboard.putNumber("guessed Y", Units.metersToInches(robotPosition.getY()));
 
@@ -123,9 +101,8 @@ just translate from the target according to that vector.
     // Target is at 50in 
     // Target is at (50in, 129in)
     // Target is 39in wide & 17in high
-
-
-    m_driveSubsystem.updateOdometry(new Pose2d(robotPosition, currentAngle), currentAngle);
+    
+    m_driveSubsystem.overwriteOdometry(new Pose2d(robotPosition, currentAngle), currentAngle);
       
   }
 

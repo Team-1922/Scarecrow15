@@ -14,8 +14,13 @@ import java.util.ArrayList;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
 import frc.robot.Constants;
+import frc.robot.subsystems.DriveSubsystem;
 
 public class Vision extends SubsystemBase {
 
@@ -42,6 +47,11 @@ public class Vision extends SubsystemBase {
 
   private NetworkTableEntry m_ledMode = table.getEntry("ledMode");
   private NetworkTableEntry m_cameraMode = table.getEntry("camMode");
+
+  private NetworkTableEntry m_camTran = table.getEntry("camtran");
+
+
+
 
   private CalibrationMap m_calibrationMap;
 
@@ -105,35 +115,23 @@ public class Vision extends SubsystemBase {
     double centerAboveLimelight = targetHeight - limelightHeight;
 
 
-    double farCalibrationDistance = 104; // back of the carpet
-    double farMeasuredTy = 7.7;
+    double farCalibrationDistance = 83; 
+    double farMeasuredTy = 9.73;
+    double farAngleOfRobot = 0.4;
+
 
     double calculatedFarTy = Math.atan(centerAboveLimelight / farCalibrationDistance);
-    double farOffset = farMeasuredTy - Units.radiansToDegrees(calculatedFarTy);
+    double farTyDegrees = Units.radiansToDegrees(calculatedFarTy);
+    double calculatedTyDegreesWithGyro = farTyDegrees + farAngleOfRobot;
+    double farOffset = farMeasuredTy - calculatedTyDegreesWithGyro;
+
+    double noGyroOffset = farMeasuredTy - farTyDegrees;
 
     CalibrationPoint farPoint = new CalibrationPoint(farCalibrationDistance, farOffset);
+    CalibrationPoint noGyroPoint = new CalibrationPoint(farCalibrationDistance, noGyroOffset);
 
-
-    double midCalibrationDistance = 74;
-    double midMeasuredTy = 11.11;
-
-    double calculatedMidTy = Math.atan(centerAboveLimelight / midCalibrationDistance);
-    double midOffset = midMeasuredTy - Units.radiansToDegrees(calculatedMidTy);
-
-    CalibrationPoint midPoint = new CalibrationPoint(midCalibrationDistance, midOffset);
-
-
-    double closeCalibrationDistance = 49;
-    double closeMeasuredTy = 13.6;
-
-    double calculatedCloseTy = Math.atan(centerAboveLimelight / closeCalibrationDistance);
-    double closeOffset = closeMeasuredTy - Units.radiansToDegrees(calculatedCloseTy);
-
-    CalibrationPoint closePoint = new CalibrationPoint(closeCalibrationDistance, closeOffset);
-
-    calibrationPoints.add(closePoint);
-    calibrationPoints.add(midPoint);
     calibrationPoints.add(farPoint);
+    calibrationPoints.add(noGyroPoint);
     m_calibrationMap = new CalibrationMap(calibrationPoints);
   }
 
@@ -154,12 +152,26 @@ public class Vision extends SubsystemBase {
     
     //TODO: This should use our "predicted" distance from target from the odometry
     double limelightAngle = m_calibrationMap.getOffset(0); //Fix this
+    double noGyroLimelightAngle = m_calibrationMap.getNoGyroOffset();
 
-    double angleAboveLimelight = ty();
+    double angleOfRobot = DriveSubsystem.getInstance().getRoll();
+
+    SmartDashboard.putNumber("Pitch", angleOfRobot);
+
+    double angleAboveLimelight = ty() - angleOfRobot;
+    double angleAboveLimelightNoGyro = ty();
+
     double angleAboveHorizontal = angleAboveLimelight - limelightAngle; //subtraction because limelight is pointed down
+    double angleAboveHorizontalNoGyro = angleAboveLimelightNoGyro - noGyroLimelightAngle;
+
     double angleAboveHorizontalInRadians = Units.degreesToRadians(angleAboveHorizontal);
+    double angleAboveHorizontalInRadiansNoGyro = Units.degreesToRadians(angleAboveHorizontalNoGyro);
+
     double tan = Math.tan(angleAboveHorizontalInRadians);
+    double tanNoGyro = Math.tan(angleAboveHorizontalInRadiansNoGyro);
+
     double distanceToTarget = centerAboveLimelight / tan;
+    double distanceToTargetNoGyro = centerAboveLimelight / tanNoGyro;
 
 
     // https://docs.limelightvision.io/en/latest/cs_estimating_distance.html
@@ -171,12 +183,107 @@ public class Vision extends SubsystemBase {
 
     NetworkTable table = NetworkTableInstance.getDefault().getTable("OzRam");
     NetworkTableEntry tableDistanceToTarget = table.getEntry("DistanceToTarget");
+    NetworkTableEntry noGyroDistanceToTarget = table.getEntry("DistanceToTargetNoGyro");
     tableDistanceToTarget.setDouble(distanceToTarget);
+    noGyroDistanceToTarget.setDouble(distanceToTargetNoGyro);
+
     return distanceToTarget;
+  }
+
+
+  public void locationOnField() {
+
+
+
+    // get the distance to the limelight - 
+    // calculate the position of the limelight on the field
+    // then take the rotation of the robot and calculate an additional offset vector
+
+
+    /*
+
+    // The local coordinate system, of the robot, has the origin aligned with the middle of the robot
+    Translation2d limelightToCenterOfRobot = new Translation2d(Constants.kRobotLengthMiddle, 0);  // distance from the limelight to the middle
+    Rotation2d robotRotationAroundCenter = new Rotation2d(  Units.degreesToRadians(-DriveSubsystem.getInstance().getAngle()));
+    Translation2d rotatedLimeLightPosition = limelightToCenterOfRobot.rotateBy(robotRotationAroundCenter);
+
+
+    
+    Translation2d targetPosition = new Translation2d(Constants.kPowerPort.getTranslation().getX(), Constants.kPowerPort.getTranslation().getY());
+*/
+
+
+            Translation2d targetPosition = Constants.kPowerPort.getTranslation();
+
+            double limelightDistanceToCenterOfRobot = Units.inchesToMeters(getDistanceFromTarget()) + Constants.kRobotLengthMiddle;
+            double angleToTarget = tx();
+        
+            Pose2d currentEstimatedPosition = DriveSubsystem.getInstance().getPositionOnField();
+            Rotation2d currentAngle = currentEstimatedPosition.getRotation(); // we'll assume this is correct
+        
+            Translation2d baseVector = new Translation2d(limelightDistanceToCenterOfRobot, 0);
+            // Rotation2d rotation = Rotation2d.fromDegrees(-(currentAngle.getDegrees() - angleToTarget + 180));
+            Rotation2d rotation = Rotation2d.fromDegrees((currentAngle.getDegrees() - angleToTarget) + 180);
+            Translation2d targetToRobot = baseVector.rotateBy(rotation);
+        
+            Translation2d robotPosition = targetPosition.plus(targetToRobot);
+        
+            SmartDashboard.putNumber("guessed X", Units.metersToInches(robotPosition.getX()));
+            SmartDashboard.putNumber("guessed Y", Units.metersToInches(robotPosition.getY()));
+
+    /*
+        //Translation2d targetPosition = new Translation2d(Units.inchesToMeters(129), Units.inchesToMeters(51));
+        Translation2d targetPosition = new Translation2d(Constants.kPowerPort.getTranslation().getX(), Constants.kPowerPort.getTranslation().getY());
+
+        double limelightDistanceToCenterOfRobot = Units.inchesToMeters(getDistanceFromTarget());
+        double angleToTarget = tx();
+    
+        Pose2d currentEstimatedPosition = DriveSubsystem.getInstance().getPositionOnField();
+        Rotation2d currentAngle = currentEstimatedPosition.getRotation(); // we'll assume this is correct
+    
+        Translation2d baseVector = new Translation2d(limelightDistanceToCenterOfRobot, 0);
+        // Rotation2d rotation = Rotation2d.fromDegrees(-(currentAngle.getDegrees() - angleToTarget + 180));
+        Rotation2d rotation = Rotation2d.fromDegrees(-(currentAngle.getDegrees() - (angleToTarget + 180)));
+        Translation2d targetToRobot = baseVector.rotateBy(rotation);
+    
+        Translation2d robotPosition = targetPosition.plus(targetToRobot);
+    
+        SmartDashboard.putNumber("guessed X", Units.metersToInches(robotPosition.getX()));
+        SmartDashboard.putNumber("guessed Y", Units.metersToInches(robotPosition.getY()));
+        */
   }
 
   @Override
   public void periodic() {
+    locationOnField();
     getDistanceFromTarget();
+
+   double[] values = new double[6];
+values = m_camTran.getDoubleArray(values);
+
+
+NetworkTable table = NetworkTableInstance.getDefault().getTable("OzRam");
+
+NetworkTableEntry transX = table.getEntry("TransX");
+transX.setDouble(values[0]);
+
+NetworkTableEntry transY = table.getEntry("TransY");
+transY.setDouble(values[1]);
+
+NetworkTableEntry transZ = table.getEntry("TransZ");
+transZ.setDouble(values[2]);
+
+
+NetworkTableEntry pitch = table.getEntry("pitch");
+pitch.setDouble(values[3]);
+
+NetworkTableEntry yaw = table.getEntry("yaw");
+yaw.setDouble(values[4]);
+
+NetworkTableEntry roll = table.getEntry("roll");
+roll.setDouble(values[5]);
+
+
+
   }
 }

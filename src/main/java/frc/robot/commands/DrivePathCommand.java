@@ -12,6 +12,7 @@ import java.util.function.BiConsumer;
 
 import edu.wpi.first.wpilibj.controller.RamseteController;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
@@ -70,14 +71,18 @@ public class DrivePathCommand extends RamseteCommand {
     return new DrivePathCommand(path).andThen(() -> DriveSubsystem.getInstance().stop());
   }
 
+
+
   static public Trajectory buildStraightPath(double distance) {
 
     Pose2d startPose = DriveSubsystem.getInstance().getPositionOnField();
 
     Rotation2d endRotation = startPose.getRotation();
     Translation2d translation = new Translation2d(distance, 0.0);
+    Transform2d transform = new Transform2d(translation, endRotation);
+    
+    Pose2d endPose = startPose.plus(transform);
 
-    Pose2d endPose = new Pose2d(translation, endRotation);
 
     Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
         // Start at the origin facing the +X direction
@@ -85,6 +90,19 @@ public class DrivePathCommand extends RamseteCommand {
         // Pass config
         Constants.kConfig);
 
+    return trajectory;
+  }
+
+  static public CommandBase buildStraightToGoalCommand()
+  {
+    Pose2d currentPosition = DriveSubsystem.getInstance().getPositionOnField();
+    Trajectory path = buildStraightPathToGoal(currentPosition);
+    return new DrivePathCommand(path).andThen(() -> DriveSubsystem.getInstance().stop());
+  }
+
+  static public Trajectory buildStraightPathToGoal(Pose2d currentPosition)
+  {
+    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(List.of(currentPosition, Constants.kPowerPortShootingLocation), Constants.kConfig);
     return trajectory;
   }
 

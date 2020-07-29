@@ -7,6 +7,9 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.geometry.Pose2d;
+import edu.wpi.first.wpilibj.geometry.Rotation2d;
+import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.kinematics.DifferentialDriveKinematics;
 import edu.wpi.first.wpilibj.trajectory.TrajectoryConfig;
 import edu.wpi.first.wpilibj.trajectory.constraint.DifferentialDriveKinematicsConstraint;
@@ -57,7 +60,7 @@ public final class Constants {
 	public static final int kRightUltrasonicPort = 1;
 
 	public static final double kValueToInches = 0.125; // 1/8" inch 8 units in an inch
-	public static final double kMMinInch = 25.4; // 25 mm in an inch-
+	public static final double kMMinInch = 25.4; // 25.4 mm in an inch-
 
 	// TOF
 	public static final int kLeftTOF = 0; //
@@ -165,22 +168,53 @@ public final class Constants {
 	public final static double kMetersPerTic = (1.0 /  kWheelCircumference) / kFullRotationPulses;
 
 
-	public final static double kAutonomousMaxSpeedMetersPerSecond = 2.0; // this can go up to 3 meters/second to give us 10ft/second
-	public final static double kAutoMaxAccelerationMetersPerSecondSquared = 1.0; // wild guess at a reasonable value, needs to be tuned
+	public final static double kAutonomousMaxSpeedMetersPerSecond = 1.0; // this can go up to 3 meters/second to give us 10ft/second
+	public final static double kAutoMaxAccelerationMetersPerSecondSquared = .75; // wild guess at a reasonable value, needs to be tuned
+
+
 	// Reasonable baseline values for a RAMSETE follower in units of meters and seconds
 	public final static double kRamseteB = 2;
 	public final static double kRamseteZeta = 0.75;
 
 
-	public static final double kTrackwidthMeters = (22.0 * .0254); 
+	public static final double kTrackWidthMeters = Units.inchesToMeters(22.0); 
 	
 	public static final double kMaxTelopVelocity = Units.feetToMeters(9.0); // 12 feet per second - needs to match the current gearbox capability
 	public static final double kMaxTelopAcceleration = Units.feetToMeters(3.0); // 12 meters per second
 	public static final int kMaxTelopAccelerationInSensorUnits = (int) ((kMaxTelopAcceleration / kEncoderTicksPerMeter) * 0.1);  // the ten is to get it to 100ms instead of a second
 
-	public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackwidthMeters);
+	public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackWidthMeters);
 	public static final DifferentialDriveKinematicsConstraint kDriveConstraint = new DifferentialDriveKinematicsConstraint(kDriveKinematics,kAutonomousMaxSpeedMetersPerSecond);
     public static final TrajectoryConfig kConfig = new TrajectoryConfig(kAutonomousMaxSpeedMetersPerSecond,kAutoMaxAccelerationMetersPerSecondSquared).setKinematics(Constants.kDriveKinematics).addConstraint(kDriveConstraint);
 
+
+	// points of interest in the field.  All locations are described relative to the origin.  if the origin changes the points of interest relative to the point of origin need to be updated
+
+
+
+	public static final double kFieldWidth =  Units.inchesToMeters(95.0);  // distance between the long sides of the field
+	public static final double kFieldLength = Units.inchesToMeters(129.0);  //alliance wall to alliance wall
+	public static final double kRobotWidth = Units.inchesToMeters(30.0);
+	public static final double kRobotWidthMiddle = kRobotWidth / 2.0;
+	public static final double kRobotLength = Units.inchesToMeters(24.0);
+	public static final double kRobotLengthMiddle = kRobotLength / 2.0;
+
+	// X Axis is aligned with the long edge of the field, 
+	// Y Axis is aligned with the short edge of the field,
+	// facing the field from the alliance driver station 0,0 is in the near, right corner.  stand at the alliance driver station, face the field, turn your head to the right.  that corner is 0,0
+	public static final Pose2d kFieldOrigin = new Pose2d(0.0,0.0, new Rotation2d(0.0));  
+	public static final Pose2d kStartingPosition1 = new Pose2d(kRobotLengthMiddle, kRobotWidthMiddle, new Rotation2d());
+	public static final Pose2d kStartingPosition2 = new Pose2d(kRobotLengthMiddle, kFieldWidth - kRobotWidthMiddle, new Rotation2d());
+	
+
+	/** location of the power port for the alliance.  the positiion is relative to the field origin */
+	public static final Pose2d kPowerPort = new Pose2d(new Translation2d(Units.inchesToMeters(129), Units.inchesToMeters(44)), new Rotation2d());
+
+	/** Ideal location for shooting power cells at the power port */
+	public static final Pose2d kPowerPortShootingLocation = new Pose2d(new Translation2d(Units.inchesToMeters(75.0), Units.inchesToMeters(40.0)), new Rotation2d());
+
+
+	//public static final Pose2d goalPose = new Pose2d(new Translation2d(Units.inchesToMeters(129-83), Units.inchesToMeters(47)), new Rotation2d());
+	// public static final Pose2d goalPose = new Pose2d(new Translation2d(Units.inchesToMeters(129-40), Units.inchesToMeters(-12)), new Rotation2d());
 
 }

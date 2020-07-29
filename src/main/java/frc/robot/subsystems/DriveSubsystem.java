@@ -46,7 +46,6 @@ public class DriveSubsystem extends SubsystemBase {
   DifferentialDriveOdometry m_odometry;
   Pose2d m_estimatedPosition;
 
-
   private static DriveSubsystem m_instance;
 
   // private constructor to avoid client applications to use constructor
@@ -70,8 +69,9 @@ public class DriveSubsystem extends SubsystemBase {
   private DriveSubsystem() {
     super();
 
-    Pose2d currentPose = new Pose2d(Units.inchesToMeters(12), Units.inchesToMeters(12), new Rotation2d());
-    m_odometry = new DifferentialDriveOdometry(new Rotation2d(0.0), currentPose);
+    //Pose2d currentPose = new Pose2d(Units.inchesToMeters(12), Units.inchesToMeters(12), new Rotation2d());
+
+    m_odometry = new DifferentialDriveOdometry(new Rotation2d(0.0), Constants.kStartingPosition1);
     m_estimatedPosition = new Pose2d(0.0, 0.0, new Rotation2d());
 
   }
@@ -80,7 +80,8 @@ public class DriveSubsystem extends SubsystemBase {
 
     System.out.println("[DriveSubsystem.initControlSystem]");
 
-    zeroSensors();
+    zeroGyro();
+    zeroEncoders();
 
     m_rightFront.configFactoryDefault();
     m_leftFront.configFactoryDefault();
@@ -132,46 +133,26 @@ public class DriveSubsystem extends SubsystemBase {
     // m_leftFront.configMotionAcceleration(Constants.kMaxTelopAccelerationInSensorUnits,
     // Constants.kTimeoutMs);
 
-    zeroSensors();
+    zeroGyro();
+    zeroEncoders();
 
   }
 
-  /**
-   * sets the robots location on the field to the specified settings. This method
-   * should only be called once per match.
-   *
-   * @param x         the x and y location on the field in meters. the position is
-   *                  relative to the left corner of the driver station of the
-   *                  alliance we are on.
-   * @param gyroAngle the current orientation of the robot on the field. an angle
-   *                  of 0 should be looking along the X axis of the field towards
-   *                  the opposing alliance. the value should be in degrees as
-   *                  returned by the gyro
-   * 
-   */
-  public void setStartingPosition(double x, double y, double gyroAngle) {
-
-    double rad = Units.degreesToRadians(gyroAngle);
-    Rotation2d angle = new Rotation2d(rad);
-    Pose2d position = new Pose2d(x, y, angle);
-    m_odometry.resetPosition(position, angle);
-
-    Rotation2d homeAngle = new Rotation2d(rad);
-
-    m_estimatedPosition = new Pose2d(x, y, angle);
-  }
 
   public void IMUInit() {
     m_imu.setYaw(0);
   }
 
-  public void zeroSensors() {
+  public void zeroGyro() {
 
     System.out.println("[DriveSubsystem.zeroSensors] initializing sensors");
     m_navXMP.zeroYaw();
     m_navXMP.resetDisplacement();
     m_navXMP.reset();
     IMUInit();
+  }
+
+  public void zeroEncoders() {
 
     m_rightFront.getSensorCollection().setQuadraturePosition(0, 10);
     m_leftFront.getSensorCollection().setQuadraturePosition(0, 10);
@@ -180,7 +161,8 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void zeroPose() {
-    zeroSensors();
+    zeroGyro();
+    zeroEncoders();
   }
 
   public void stop() {
@@ -214,10 +196,10 @@ public class DriveSubsystem extends SubsystemBase {
     m_leftFront.set(ControlMode.Velocity, leftVelocity);
     m_rightFront.set(ControlMode.Velocity, rightVelocity);
 
-    //SmartDashboard.putNumber("left Speed m/s", left);
-    //SmartDashboard.putNumber("right Speed m/s", right);
-    //SmartDashboard.putNumber("left Speed ticks/100ms", leftVelocity);
-    //SmartDashboard.putNumber("right Speed ticks/100ms", rightVelocity);
+    // SmartDashboard.putNumber("left Speed m/s", left);
+    // SmartDashboard.putNumber("right Speed m/s", right);
+    // SmartDashboard.putNumber("left Speed ticks/100ms", leftVelocity);
+    // SmartDashboard.putNumber("right Speed ticks/100ms", rightVelocity);
   }
 
   public int getLeftError() {
@@ -227,8 +209,6 @@ public class DriveSubsystem extends SubsystemBase {
   public int getRightError() {
     return m_rightFront.getClosedLoopError();
   }
-
-
 
   public int getLeftEncoder() {
     return m_leftFront.getSelectedSensorPosition();
@@ -251,11 +231,18 @@ public class DriveSubsystem extends SubsystemBase {
     return m_navXMP.getYaw();
   }
 
+  public double getPitch() {
+    return m_navXMP.getPitch();
+  }
+
+  public double getRoll() {
+    return m_navXMP.getRoll();
+  }
+
   @Override
   public void periodic() {
 
     updateOdometry();
-    updatedEstimatedPosition();
     updateDashboard();
 
   }
@@ -273,8 +260,9 @@ public class DriveSubsystem extends SubsystemBase {
     // Get my gyro angle. We are negating the value because gyros return positive
     // values as the robot turns clockwise. This is not standard convention that is
     // used by the WPILib classes.
+    // TODO: Actually we are not negating the angle.. 
 
-    double rad = Units.degreesToRadians(-getAngle());
+    double rad = Units.degreesToRadians(getAngle());
     Rotation2d gyroAngle = new Rotation2d(rad);
 
     double leftEncoder = m_leftFront.getSelectedSensorPosition() / Constants.kEncoderTicksPerMeter;
@@ -283,19 +271,18 @@ public class DriveSubsystem extends SubsystemBase {
     m_odometry.update(gyroAngle, leftEncoder, rightEncoder);
   }
 
-  public void updatedEstimatedPosition()
-  {
-  
-    // double rad = Units.degreesToRadians(-tx());
-    
-  }
+  public void overwriteOdometry(Pose2d currentPose, Rotation2d rotation) {
+    zeroEncoders();
 
-  public void updateOdometry(Pose2d currentPose, Rotation2d rotation){
-    DifferentialDriveOdometry tempOdometry = new DifferentialDriveOdometry(rotation, currentPose);
+    //TODO: look at the rotation value being sent to resetPosition.  the documentation says this is the GyroAngle - not sure how that is different than the rotation in the Pose2d.
 
-    //SmartDashboard.putNumber("Field X Calculated", currentPose.getTranslation().getX());
-    //SmartDashboard.putNumber("Field Y Calculated", currentPose.getTranslation().getY());
-    //SmartDashboard.putNumber("Field Heading Calculated", rotation.getDegrees());
+    m_odometry.resetPosition(currentPose, rotation);
+
+    // SmartDashboard.putNumber("Field X Calculated",
+    // currentPose.getTranslation().getX());
+    // SmartDashboard.putNumber("Field Y Calculated",
+    // currentPose.getTranslation().getY());
+    // SmartDashboard.putNumber("Field Heading Calculated", rotation.getDegrees());
   }
 
   public void updateDashboard() {
@@ -313,15 +300,17 @@ public class DriveSubsystem extends SubsystemBase {
     NetworkTableEntry tableDistanceToTarget = table.getEntry("compass Heading");
     tableDistanceToTarget.setDouble(compassHeading);
 
-    //SmartDashboard.putNumber("Compass", compassHeading);
+    // SmartDashboard.putNumber("Compass", compassHeading);
 
-    //SmartDashboard.putNumber("left distance", leftWheelDistance());
-    //SmartDashboard.putNumber("right distance", rightWheelDistance());
+    // SmartDashboard.putNumber("left distance", leftWheelDistance());
+    // SmartDashboard.putNumber("right distance", rightWheelDistance());
 
-    //SmartDashboard.putNumber("left velocity", m_leftFront.getSelectedSensorVelocity());
-    //SmartDashboard.putNumber("right velocity", m_rightFront.getSelectedSensorVelocity());
+    // SmartDashboard.putNumber("left velocity",
+    // m_leftFront.getSelectedSensorVelocity());
+    // SmartDashboard.putNumber("right velocity",
+    // m_rightFront.getSelectedSensorVelocity());
 
-    //SmartDashboard.putNumber("gyro", getAngle());
+    // SmartDashboard.putNumber("gyro", getAngle());
 
   }
 }
