@@ -283,6 +283,8 @@ yaw.setDouble(values[4]);
 NetworkTableEntry roll = table.getEntry("roll");
 roll.setDouble(values[5]);
 
+NetworkTableEntry roll = table.getEntry("Vector");
+roll.setDouble(42.0);
 
 
   }
