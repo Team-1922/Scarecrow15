@@ -32,6 +32,7 @@ public class Range extends SubsystemBase {
 
   // construct a default Kalman filter - 
   // stubbing out the Kalman filter code
+  // really making it work now
  // private KalmanFilter m_ultrasonicKalmanFilter = new KalmanFilter();
 
   // 
