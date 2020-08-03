@@ -317,24 +317,6 @@ public class Vision extends SubsystemBase {
     roll.setDouble(values[5]);
 
 
-    NetworkTableEntry ultrasonic = table.getEntry("UltrasonicKalmandDistance");
-    double kalmanUltrasonicDistance = 12.0; // m_ultrasonic.getValue() * kValueToInches;
-    ultrasonic.setDouble(kalmanUltrasonicDistance );
-    // Kalman correct 
-
-    // MatOfDouble matOfYaw = new MatOfDouble (m_cameraYaw);
-    
-    // KalmanFilter m_cameraYawKalmanFilter = new KalmanFilter();
-
-   
- 
-
-   // m_cameraYawKalmanFilter.correct(matOfYaw);
-    //m_matOfYaw = m_cameraYawKalmanFilter.predict();
-    
-
-
-
   }
 
   public double getCameraYaw() {
