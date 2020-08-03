@@ -115,10 +115,7 @@ public class Range extends SubsystemBase {
   //  ultrasonicVoltage.setDouble(m_ultrasonic.getValue());
 
 
-    NetworkTableEntry ultrasonic = table.getEntry("UltrasonicKalmandDistance");
-    double kalmanUltrasonicDistance = 12.0; // m_ultrasonic.getValue() * kValueToInches;
-    ultrasonic.setDouble(kalmanUltrasonicDistance );
-    // Kalman correct 
+   
 
     
     

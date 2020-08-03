@@ -1,31 +1,12 @@
 package frc.robot.Components;
 
-import com.ctre.phoenix.motorcontrol.*;
-import com.ctre.phoenix.motorcontrol.can.WPI_TalonSRX;
-import com.ctre.phoenix.sensors.PigeonIMU;
-
 import java.lang.Math;
 
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-
-import com.kauailabs.navx.frc.*;
-
 import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.DigitalInput;
-
-import com.playingwithfusion.*;
-import com.playingwithfusion.TimeOfFlight.RangingMode;
-
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableEntry;
-import edu.wpi.first.networktables.NetworkTableInstance;
 
 public class BeamBreak extends AnalogInput {
 
   
-    private long m_lastCount = -1;
     private int m_broken = -1; // -1 indicates that it is indeterminant
     private int m_floor = 5000; // sentinel - all the values should be less than this
     private int m_ceiling = -5000;

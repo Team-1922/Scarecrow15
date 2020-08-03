@@ -213,6 +213,9 @@ public final class Constants {
 	/** Ideal location for shooting power cells at the power port */
 	public static final Pose2d kPowerPortShootingLocation = new Pose2d(new Translation2d(Units.inchesToMeters(75.0), Units.inchesToMeters(40.0)), new Rotation2d());
 
+	public static final double kTargetHeight = Units.inchesToMeters(((26.0 - 9.0) / 2.0) + 9.0);
+
+    public static final double kLimelightHeight = Units.inchesToMeters(8.0);
 
 	//public static final Pose2d goalPose = new Pose2d(new Translation2d(Units.inchesToMeters(129-83), Units.inchesToMeters(47)), new Rotation2d());
 	// public static final Pose2d goalPose = new Pose2d(new Translation2d(Units.inchesToMeters(129-40), Units.inchesToMeters(-12)), new Rotation2d());
