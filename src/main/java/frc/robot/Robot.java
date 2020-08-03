@@ -12,6 +12,8 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+//import org.opencv.video.KalmanFilter;
+
 
 import frc.robot.Components.Tracker;
 
@@ -29,6 +31,11 @@ public class Robot extends TimedRobot {
   private Tracker m_tracker = new Tracker();
   private Thread m_trackerThread = new Thread(m_tracker);
 
+ 
+  static {
+  //   System.load("//usr/local/frc/third-party/lib/libopencv_video.so");
+  //System.load("core.libopencv_video.so");
+}
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
@@ -45,6 +52,8 @@ public class Robot extends TimedRobot {
       m_trackerThread.start();
     }
 
+   
+   
   }
 
   /**
@@ -114,6 +123,8 @@ public class Robot extends TimedRobot {
       m_autonomousCommand.cancel();
     }
     m_robotContainer.teleopInit();
+
+    
 
   }
 
