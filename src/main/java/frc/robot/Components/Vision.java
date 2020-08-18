@@ -17,6 +17,7 @@ import org.opencv.core.MatOfDouble;
 //import org.opencv.core.MatOfDouble;
 //import org.opencv.video.KalmanFilter;
 
+
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -52,6 +53,7 @@ public class Vision extends SubsystemBase {
 
   // Vertical length of the bounding box
   private NetworkTableEntry m_tvert = m_limeLightTable.getEntry("tvert");
+
 
   private NetworkTableEntry m_ledMode = m_limeLightTable.getEntry("ledMode");
   private NetworkTableEntry m_cameraMode = m_limeLightTable.getEntry("camMode");
@@ -98,6 +100,7 @@ public class Vision extends SubsystemBase {
 
   private CalibrationMap m_calibrationMap;
   
+
   private double m_cameraYaw = 0.0;
 
 
@@ -153,6 +156,7 @@ public class Vision extends SubsystemBase {
     m_cameraMode.setNumber(Constants.cLLCameraVisionProcess);
   }
 
+
   // This function dosen't actually do anything right now, it's where we'll
   // document our calibration procedure
   public void calibrate() {
@@ -163,8 +167,10 @@ public class Vision extends SubsystemBase {
     double centerAboveLimelight = targetHeight - limelightHeight;
 
     double farCalibrationDistance = 83;
+
     double farMeasuredTy = 10.23;//9.73; // 10.179; //   was 9.73;
     double farAngleOfRobot = -0.35; //read this directly off the Pitch value from the gyro. Include the sign
+
 
     double calculatedFarTy = Math.atan(centerAboveLimelight / farCalibrationDistance);
     double farTyDegrees = Units.radiansToDegrees(calculatedFarTy);
@@ -220,6 +226,7 @@ public class Vision extends SubsystemBase {
     // double calibratedAngleInRadians = Math.tan(calibrationCrossHairY /
     // calibrationDistanceFromTarget);
 
+
     // double combinedAngleInRadians = Units.degreesToRadians(ty()) -
     // limelightAngle; //angle above horizontal
     // double distanceToTarget = centerOfTarget / Math.tan(combinedAngleInRadians);
@@ -227,6 +234,7 @@ public class Vision extends SubsystemBase {
 
     m_tableDistanceToTarget.setDouble(Units.metersToInches(distanceToTarget));
     m_noGyroDistanceToTarget.setDouble(Units.metersToInches(distanceToTargetNoGyro));
+
 
     return distanceToTarget;
   }
@@ -263,9 +271,11 @@ public Pose2d usingSlopeYawToGetLocationOnField ()
   
   private Pose2d locationOnField(double targetYaw) {
 
+
     // get the distance to the limelight -
     // calculate the position of the limelight on the field
     // then take the rotation of the robot and calculate an additional offset vector
+
 
     Translation2d targetPosition = Constants.kPowerPort.getTranslation();
 
@@ -613,6 +623,7 @@ public double calculateSlope()
 
     double vph = 2.0* Math.tan(vertical_fov/2.0);
 
+
     double dy = vph/2.0 * ny;
     
     return dy;
@@ -625,6 +636,7 @@ public double calculateSlope()
     double ay = Math.atan2(y, 1.0);
 
     return ay;
+    
   }
 
   public double getSlopeYaw()

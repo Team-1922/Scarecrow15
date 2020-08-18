@@ -34,14 +34,7 @@ public class Robot extends TimedRobot {
   private Tracker m_tracker = new Tracker();
   private Thread m_trackerThread = new Thread(m_tracker);
 
-  
- 
-  static {
-   System.load("/usr/local/frc/third-party/lib/libopencv_video.so.3.4");
-   System.load("/usr/local/frc/third-party/lib/libopencv_core.so.3.4");
-   //System.loadLibrary("libopencv_video");
-   //System.loadLibrary("libopencv_core.so.3.4");
-}
+
   /**
    * This function is run when the robot is first started up and should be used
    * for any initialization code.
