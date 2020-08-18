@@ -260,9 +260,8 @@ public class DriveSubsystem extends SubsystemBase {
     // Get my gyro angle. We are negating the value because gyros return positive
     // values as the robot turns clockwise. This is not standard convention that is
     // used by the WPILib classes.
-    // TODO: Actually we are not negating the angle.. 
 
-    double rad = Units.degreesToRadians(getAngle());
+    double rad = Units.degreesToRadians(-getAngle());
     Rotation2d gyroAngle = new Rotation2d(rad);
 
     double leftEncoder = m_leftFront.getSelectedSensorPosition() / Constants.kEncoderTicksPerMeter;
@@ -271,12 +270,16 @@ public class DriveSubsystem extends SubsystemBase {
     m_odometry.update(gyroAngle, leftEncoder, rightEncoder);
   }
 
-  public void overwriteOdometry(Pose2d currentPose, Rotation2d rotation) {
+  public void overwriteOdometry(Pose2d currentPose) {
+    if(currentPose == null)
+    {
+      return;
+    }
     zeroEncoders();
 
     //TODO: look at the rotation value being sent to resetPosition.  the documentation says this is the GyroAngle - not sure how that is different than the rotation in the Pose2d.
 
-    m_odometry.resetPosition(currentPose, rotation);
+    m_odometry.resetPosition(currentPose, currentPose.getRotation());
 
     // SmartDashboard.putNumber("Field X Calculated",
     // currentPose.getTranslation().getX());
@@ -299,6 +302,10 @@ public class DriveSubsystem extends SubsystemBase {
     NetworkTable table = NetworkTableInstance.getDefault().getTable("OzRam");
     NetworkTableEntry tableDistanceToTarget = table.getEntry("compass Heading");
     tableDistanceToTarget.setDouble(compassHeading);
+
+    NetworkTableEntry pitch = table.getEntry("Pitch");
+    pitch.setDouble(getPitch());
+
 
     // SmartDashboard.putNumber("Compass", compassHeading);
 

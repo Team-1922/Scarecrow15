@@ -11,6 +11,7 @@ import frc.robot.Constants;
 import frc.robot.subsystems.DriveSubsystem;
 import frc.robot.Components.Vision;
 import edu.wpi.first.wpilibj.Joystick;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 
 
@@ -62,19 +63,24 @@ public class TankDriveCommand extends CommandBase {
   @Override
   public void execute() {
 
+    Pose2d location = m_vision.locationOnField();
+    if(location != null)
+    {
+     m_driveSubsystem.overwriteOdometry(location);
+    }
+
     double left = Constants.kMaxTelopVelocity * deadBand(-m_leftStick.getY());
     double right  = Constants.kMaxTelopVelocity * deadBand(-m_rightStick.getY());
 
     // the drive system is set up to target speed, so - we want to convert this to a speed which will be a range of full reverse to full forward or ~ -3m/s to 3m/s
    //   m_driveSubsystem.drive(-m_leftStick.getY(),-m_rightStick.getY());
-   m_driveSubsystem.drive (left, right);
+   m_driveSubsystem.drive(left, right);
 
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_vision.enableCameraMode();
   }
 
   // Returns true when the command should end.

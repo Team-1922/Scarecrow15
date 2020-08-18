@@ -14,7 +14,7 @@ import frc.robot.Components.Vision;
 /**
  * An example command that uses an example subsystem.
  */
-public class DriveToShootingPosition extends InstantCommand {
+public class PointAtGoal extends InstantCommand {
   @SuppressWarnings({ "PMD.UnusedPrivateField", "PMD.SingularField" })
 
 private Vision m_vision;
@@ -25,7 +25,7 @@ private Vision m_vision;
    *
    * @param subsystem The subsystem used by this command.
    */
-  public DriveToShootingPosition(Vision vision) {
+  public PointAtGoal(Vision vision) {
     m_vision = vision;
   }
 
@@ -39,11 +39,10 @@ private Vision m_vision;
   @Override
   public void execute() {
 
-    CommandBase driveCommand = DrivePathCommand.buildStraightToGoalCommand(m_vision);
-    //CommandBase driveCommand = DrivePathCommand.buildStraightCommand();
+    var angleToTarget = -m_vision.tx();
+    CommandBase driveCommand = DrivePathCommand.buildTurnByDegreesCommand(angleToTarget);
 
     driveCommand.schedule();
-
   }
 
   // Called once the command ends or is interrupted.

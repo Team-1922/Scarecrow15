@@ -21,9 +21,12 @@ import edu.wpi.first.wpilibj.trajectory.TrajectoryGenerator;
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.RamseteCommand;
 import frc.robot.Constants;
+import frc.robot.Components.Vision;
 import frc.robot.subsystems.DriveSubsystem;
 
 public class DrivePathCommand extends RamseteCommand {
+  private Vision m_vision;
+
   /**
    * Creates a new DrivePathCommand.
    */
@@ -39,6 +42,15 @@ public class DrivePathCommand extends RamseteCommand {
     super(path, DriveSubsystem.getInstance()::getPositionOnField, m_controller, Constants.kDriveKinematics,
         ramseteConsumer, DriveSubsystem.getInstance());
 
+    addRequirements(DriveSubsystem.getInstance());
+  }
+
+  public DrivePathCommand(Trajectory path, Vision vision) {
+
+    super(path, DriveSubsystem.getInstance()::getPositionOnField, m_controller, Constants.kDriveKinematics,
+        ramseteConsumer, DriveSubsystem.getInstance());
+
+        m_vision = vision;
     addRequirements(DriveSubsystem.getInstance());
   }
 
@@ -93,12 +105,16 @@ public class DrivePathCommand extends RamseteCommand {
     return trajectory;
   }
 
-  static public CommandBase buildStraightToGoalCommand()
+  static public CommandBase buildStraightToGoalCommand(Vision vision)
   {
     Pose2d currentPosition = DriveSubsystem.getInstance().getPositionOnField();
-    Trajectory path = buildStraightPathToGoal(currentPosition);
-    return new DrivePathCommand(path).andThen(() -> DriveSubsystem.getInstance().stop());
+  //mws  Rotation2d rot = new Rotation2d(0.0);
+  //mws  Pose2d adjustedCurrentPosition = new Pose2d(currentPosition.getTranslation(), rot);
+    
+    Trajectory path = buildStraightPathToGoal(currentPosition );
+    return new DrivePathCommand(path, vision).andThen(() -> DriveSubsystem.getInstance().stop());
   }
+
 
   static public Trajectory buildStraightPathToGoal(Pose2d currentPosition)
   {
@@ -139,6 +155,31 @@ public class DrivePathCommand extends RamseteCommand {
     return trajectory;
   }
 
+  static public CommandBase buildTurnByDegreesCommand(double degrees) {
+
+    Trajectory path = generateTurnByDegrees(degrees);
+    return new DrivePathCommand(path).andThen(() -> DriveSubsystem.getInstance().stop());
+
+  }
+
+  static public Trajectory generateTurnByDegrees(double degrees)
+  {
+    Pose2d startPose = DriveSubsystem.getInstance().getPositionOnField();
+
+    Translation2d endTranslation = startPose.getTranslation().plus(new Translation2d(.001,.001));
+
+    Rotation2d endRotation = startPose.getRotation().plus(Rotation2d.fromDegrees(degrees));
+    Pose2d endPose = new Pose2d(endTranslation, endRotation);
+
+
+    Trajectory trajectory = TrajectoryGenerator.generateTrajectory(
+        List.of(startPose, endPose),
+        // Pass config
+        Constants.kConfig);
+
+    return trajectory;
+  }
+
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
@@ -148,6 +189,16 @@ public class DrivePathCommand extends RamseteCommand {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+if(m_vision != null)
+{
+  Pose2d currentPose = m_vision.locationOnField();
+  if(currentPose != null)
+  {
+    //mws DriveSubsystem.getInstance().overwriteOdometry(currentPose);
+  }
+}
+
+
     super.execute();
 
     double traveled = DriveSubsystem.getInstance().getPositionOnField().getTranslation().getX();

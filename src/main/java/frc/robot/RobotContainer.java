@@ -10,6 +10,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -19,6 +20,8 @@ import frc.robot.commands.DrivePathCommand;
 import frc.robot.commands.DriveSquareCommand;
 import frc.robot.commands.DriveToShootingPosition;
 import frc.robot.commands.FollowImageCommand;
+import frc.robot.commands.PointAtGoal;
+import frc.robot.commands.PointAtImageCommand;
 import frc.robot.commands.PositionResetCommand;
 import frc.robot.commands.EnableLED;
 import frc.robot.subsystems.DriveSubsystem;
@@ -82,7 +85,9 @@ public class RobotContainer {
     double rad = Units.degreesToRadians(-m_driveSubsystem.getAngle());
     Rotation2d gyroAngle = new Rotation2d(rad);
 
-    m_driveSubsystem.overwriteOdometry(Constants.kStartingPosition1, gyroAngle);
+    Pose2d startingPosition = new Pose2d(Constants.kStartingPosition1.getTranslation().getX(), Constants.kStartingPosition1.getTranslation().getY(), gyroAngle);
+
+    m_driveSubsystem.overwriteOdometry(startingPosition);
     m_vision.enableCameraMode();
  
     m_autoChooser.setDefaultOption("straight", DrivePathCommand.buildStraightCommand());  
@@ -137,7 +142,9 @@ public class RobotContainer {
 
       new JoystickButton(m_leftJoystick, 5).whileHeld(m_visionPos);
 
-      new JoystickButton(m_leftJoystick, 6).whenPressed(new DriveToShootingPosition());
+      Command goToGoal = new DriveToShootingPosition(m_vision).andThen(new PointAtImageCommand(m_driveSubsystem, m_vision)).andThen(() -> DriveSubsystem.getInstance().stop());
+
+      new JoystickButton(m_leftJoystick, 6).whenPressed(goToGoal);
 
 
      /* new JoystickButton(m_XBoxController, Constants.cXBoxBButton).whenPressed(new
