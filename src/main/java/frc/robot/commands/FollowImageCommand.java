@@ -47,8 +47,6 @@ public class FollowImageCommand extends CommandBase {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    m_vision.enableVisionMode();
-
   }
 
 
@@ -85,8 +83,6 @@ public class FollowImageCommand extends CommandBase {
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    m_vision.enableCameraMode();
-
   }
 
   double deadBand(double value) {

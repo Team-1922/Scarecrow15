@@ -179,8 +179,8 @@ public final class Constants {
 
 	public static final double kTrackWidthMeters = Units.inchesToMeters(22.0); 
 	
-	public static final double kMaxTelopVelocity = Units.feetToMeters(9.0); // 12 feet per second - needs to match the current gearbox capability
-	public static final double kMaxTelopAcceleration = Units.feetToMeters(3.0); // 12 meters per second
+	public static final double kMaxTelopVelocity = Units.feetToMeters(3.0);//Units.feetToMeters(9.0); // 12 feet per second - needs to match the current gearbox capability
+	public static final double kMaxTelopAcceleration = Units.feetToMeters(1.0); // 12 meters per second
 	public static final int kMaxTelopAccelerationInSensorUnits = (int) ((kMaxTelopAcceleration / kEncoderTicksPerMeter) * 0.1);  // the ten is to get it to 100ms instead of a second
 
 	public static final DifferentialDriveKinematics kDriveKinematics = new DifferentialDriveKinematics(kTrackWidthMeters);
@@ -209,6 +209,10 @@ public final class Constants {
 
 	/** location of the power port for the alliance.  the positiion is relative to the field origin */
 	public static final Pose2d kPowerPort = new Pose2d(new Translation2d(Units.inchesToMeters(129), Units.inchesToMeters(44)), new Rotation2d());
+	/** this is the top left most point on the target that the visioning system will find.  the left and right points are 3'3"1/4" apart which means it is 19.625 inches to the left of the middle of the target */
+	public static final Pose2d kPowerPortLeft = new Pose2d(new Translation2d(Units.inchesToMeters(129), Units.inchesToMeters(44 + 19.625)), new Rotation2d());
+	public static final Pose2d kPowerPortRight = new Pose2d(new Translation2d(Units.inchesToMeters(129), Units.inchesToMeters(44 - + 19.625)), new Rotation2d());
+
 
 	/** Ideal location for shooting power cells at the power port */
 	public static final Pose2d kPowerPortShootingLocation = new Pose2d(new Translation2d(Units.inchesToMeters(75.0), Units.inchesToMeters(40.0)), new Rotation2d());
@@ -219,5 +223,7 @@ public final class Constants {
 
 	//public static final Pose2d goalPose = new Pose2d(new Translation2d(Units.inchesToMeters(129-83), Units.inchesToMeters(47)), new Rotation2d());
 	// public static final Pose2d goalPose = new Pose2d(new Translation2d(Units.inchesToMeters(129-40), Units.inchesToMeters(-12)), new Rotation2d());
+
+	public static final double k90DegreesInRadians = 1.57079; 
 
 }
