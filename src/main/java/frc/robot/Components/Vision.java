@@ -11,20 +11,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import java.util.ArrayList;
 
-import org.opencv.video.KalmanFilter;
-import org.opencv.core.MatOfDouble;
-//import org.opencv.core.Mat;
-//import org.opencv.core.MatOfDouble;
-//import org.opencv.video.KalmanFilter;
-
-
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.drive.Vector2d;
 import edu.wpi.first.wpilibj.geometry.Pose2d;
 import edu.wpi.first.wpilibj.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.geometry.Transform2d;
 import edu.wpi.first.wpilibj.geometry.Translation2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
@@ -59,6 +50,7 @@ public class Vision extends SubsystemBase {
   private NetworkTableEntry m_cameraMode = m_limeLightTable.getEntry("camMode");
 
   private NetworkTableEntry m_camTran = m_limeLightTable.getEntry("camtran");
+  private NetworkTableEntry m_pipeline = m_limeLightTable.getEntry("pipeline");
 
 
   private NetworkTableEntry m_corners = m_limeLightTable.getEntry("tcornxy");
@@ -96,6 +88,8 @@ public class Vision extends SubsystemBase {
   private NetworkTableEntry m_tableDistanceToTarget = m_OzRamTable.getEntry("DistanceToTarget");
   private NetworkTableEntry m_noGyroDistanceToTarget = m_OzRamTable.getEntry("DistanceToTargetNoGyro");
   private NetworkTableEntry m_targetYaw = m_OzRamTable.getEntry("TargetYaw");
+  private NetworkTableEntry m_slopeYaw = m_OzRamTable.getEntry("SlopeYaw");
+  private NetworkTableEntry m_cameraYawNT = m_OzRamTable.getEntry("CameraYaw");
   
 
   private CalibrationMap m_calibrationMap;
@@ -154,6 +148,7 @@ public class Vision extends SubsystemBase {
   public void enableVisionMode() {
     m_ledMode.setNumber(Constants.cLLLedOn);
     m_cameraMode.setNumber(Constants.cLLCameraVisionProcess);
+    m_pipeline.setNumber(Constants.cGripPipeline);
   }
 
 
@@ -256,6 +251,7 @@ public Pose2d usingSlopeYawToGetLocationOnField ()
     // record p
     m_slopeBasedGuessedXLocation.setDouble(Units.metersToInches(p.getTranslation().getX()));
     m_slopeBasedGuessedYLocation.setDouble(Units.metersToInches(p.getTranslation().getY()));
+    m_slopeYaw.setDouble(slopeYaw);
     
     return p;
   }
@@ -335,6 +331,7 @@ public Pose2d usingSlopeYawToGetLocationOnField ()
     NetworkTableEntry yaw = table.getEntry("Yaw");
     yaw.setDouble(values[4]);
     m_cameraYaw = values[4];
+    m_cameraYawNT.setDouble(m_cameraYaw);
 
 
     NetworkTableEntry roll = table.getEntry("Roll");
@@ -641,18 +638,22 @@ public double calculateSlope()
 
   public double getSlopeYaw()
   {
-
-    double targetYaw = 0.0;
       //look at the slope and the distance to try and interprolate what the angle should be
       //double slopePerDegree = 0.035 / 10.0;
-      double slopePerDegree = (0.069 + 0.046) / 30.0;
-      
-      double changePerInch = (0.047 - 0.035) / (67.0 - 103.0);
+      double slopePerDegreeClose = (0.08 + 0.087) / 30.0; // 67inches
+      double slopePerDegreeFar = (.06 + .053) / 30.0; // 103 inches
+
+      //interpolation step 
+      double slopePerDegreePerInch = (slopePerDegreeClose - slopePerDegreeFar) / (103.0-67.0);
+
       double distanceToTarget = m_tableDistanceToTarget.getDouble(60.0);
 
-      double distanceFactor = (distanceToTarget - 103.0) * changePerInch;
-      double slopeFactor = m_slope.getDouble(0.0) / slopePerDegree;
-      targetYaw = -(slopeFactor + distanceFactor);
+      // interpolation based on our current distance
+      double slopeFactor = slopePerDegreePerInch * (distanceToTarget - 67.0);
+      double slopePerDegreeAtCurrentDistance = slopePerDegreeClose - slopeFactor;
+
+      // Use measured slope with interpolated value to estimate yaw
+      double targetYaw = -(m_slope.getDouble(0.0) / slopePerDegreeAtCurrentDistance);
 
       return targetYaw;
   }
@@ -680,6 +681,11 @@ public double calculateSlope()
     return m_cameraYaw;
   }
 
+
+  public void processGrip()
+  {
+    
+  }
 
 
 }

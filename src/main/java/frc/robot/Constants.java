@@ -54,6 +54,7 @@ public final class Constants {
 	public static final int cLLLedOn = 3;
 	public static final int cLLCameraVisionProcess = 0;
 	public static final int cLLCameraDriver = 1;
+	public static final int cGripPipeline = 3;
 
 	// Ultrasonic
 	public static final int kLeftUltrasonicPort = 0;

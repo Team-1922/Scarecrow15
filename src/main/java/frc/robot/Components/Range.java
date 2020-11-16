@@ -12,16 +12,11 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import com.playingwithfusion.*;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
 
-import org.opencv.video.KalmanFilter;
-
 import frc.robot.Constants;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.AnalogInput;
-import edu.wpi.first.wpilibj.Ultrasonic;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.util.Units;
 
 
@@ -30,38 +25,25 @@ public class Range extends SubsystemBase {
   private TimeOfFlight m_leftTOF = new TimeOfFlight(Constants.kLeftTOF);
   private TimeOfFlight m_rightTOF = new TimeOfFlight(Constants.kRightTOF);
 
-  // construct a default Kalman filter - 
-  // stubbing out the Kalman filter code
-  // really making it work now
- // private KalmanFilter m_ultrasonicKalmanFilter = new KalmanFilter();
-
-  // 
-
-  //private final AnalogInput m_ultrasonic = new AnalogInput(1);
-
   private double m_leftLast = -1.0;
   private double m_rightLast = -1.0;
 
-  //private static final double kValueToInches = 0.125;
-  // private static final double kValueToInches = (21.0 * 12) / 4095.0; // max value at 21 feet
-  private static final double kValueToInches = .052;  //  (41) / 530.0; // max value at 21 feet
-
-
+  NetworkTableEntry m_leftTOFDistance;
+  NetworkTableEntry m_rightTOFDistance;
+       
 
   /**
-   * Creates a new DriveSystem.
+   * Creates a component that has two TOF sensors for detecting the distance to a target.
    */
   public Range() {
     super();
     m_leftTOF.setRangingMode(RangingMode.Medium, Constants.kTOFTimingSampling);
     m_rightTOF.setRangingMode(RangingMode.Medium, Constants.kTOFTimingSampling);
-    // m_ultrasonic.setAutomaticMode(true);
 
-   // SmartDashboard.putData(m_ultrasonic);
-    
+    setupNetworkTables();
 
+    // by calling register this object will be added to the schedular and have its periodic funcion called on a regular basis
     register();
-
  }
 
    /**
@@ -92,35 +74,28 @@ public class Range extends SubsystemBase {
   }
 
 
+  /** Initializes the network tables and table entries.  Saves the entries as member data so that they can be written to without having to fetch them during the periodic callback */
+  private void setupNetworkTables()
+  {
+       // private NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
+       NetworkTable table = NetworkTableInstance.getDefault().getTable("OzRam");
+       NetworkTable rangeTable = table.getSubTable("Range");
+       
+       m_leftTOFDistance = rangeTable.getEntry("TOFLeft");
+       m_rightTOFDistance = rangeTable.getEntry("TOFRight");
+
+  }
+
+
   @Override
   public void periodic() {
 
-   // private NetworkTable table = NetworkTableInstance.getDefault().getTable("limelight");
-    NetworkTable table = NetworkTableInstance.getDefault().getTable("OzRam");
-    NetworkTableEntry left = table.getEntry("TOFLeft");
-    left.setDouble(Units.metersToInches(getLeftTOFDistance()));
-
-    NetworkTableEntry right = table.getEntry("TOFRight");
-    right.setDouble(Units.metersToInches(getRightTOFDistance()));
-
-    // m_kalmanFilter 
-
-
-
-
-  //  NetworkTableEntry ultrasonic = table.getEntry("UltrasonicDistance");
-  //  double currentDistance = m_ultrasonic.getValue() * kValueToInches;
-  //  ultrasonic.setDouble(currentDistance );
-  //  NetworkTableEntry ultrasonicVoltage = table.getEntry("UltrasonicVoltage");
-  //  ultrasonicVoltage.setDouble(m_ultrasonic.getValue());
-
-
-   
-
-    
-    
-
-
+    if (m_leftTOFDistance == null || m_rightTOFDistance == null) {
+      return;
+    }
+      
+    m_leftTOFDistance.setDouble(Units.metersToInches(getLeftTOFDistance()));
+    m_rightTOFDistance.setDouble(Units.metersToInches(getRightTOFDistance()));
 
   }
 

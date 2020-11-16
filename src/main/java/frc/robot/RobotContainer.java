@@ -75,6 +75,8 @@ public class RobotContainer {
 
     System.out.println("[RobotContainer]  creating the robot container");
     configureButtonBindings();
+    addCommandsToSmartDashboard();
+    addSubsystemsToSmartDashboard();
 
   }
 
@@ -156,6 +158,22 @@ public class RobotContainer {
      * new JoystickButton(m_XBoxController, Constants.cXBoxXButton).whenPressed(new
      * TurnToHeadingCommand(m_driveSubsystem, -90)); //turns left
      */
+  }
+
+  public void addCommandsToSmartDashboard() {
+    // example: SmartDashboard.putData("ElevatorMove: up", new ElevatorMove(2.7));
+    // for more information: https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/shuffleboard/advanced-usage/shuffleboard-commands-subsystems.html
+
+
+    SmartDashboard.putData("Position Reset", new PositionResetCommand(m_driveSubsystem, m_vision));
+
+  }
+
+  public void addSubsystemsToSmartDashboard() {
+   // example: SmartDashboard.putData(subsystem-reference);
+   // for more information: https://docs.wpilib.org/en/stable/docs/software/wpilib-tools/shuffleboard/advanced-usage/shuffleboard-commands-subsystems.html 
+
+   
   }
 
   /**

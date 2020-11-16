@@ -277,15 +277,7 @@ public class DriveSubsystem extends SubsystemBase {
     }
     zeroEncoders();
 
-    //TODO: look at the rotation value being sent to resetPosition.  the documentation says this is the GyroAngle - not sure how that is different than the rotation in the Pose2d.
-
     m_odometry.resetPosition(currentPose, currentPose.getRotation());
-
-    // SmartDashboard.putNumber("Field X Calculated",
-    // currentPose.getTranslation().getX());
-    // SmartDashboard.putNumber("Field Y Calculated",
-    // currentPose.getTranslation().getY());
-    // SmartDashboard.putNumber("Field Heading Calculated", rotation.getDegrees());
   }
 
   public void updateDashboard() {
@@ -305,19 +297,6 @@ public class DriveSubsystem extends SubsystemBase {
 
     NetworkTableEntry pitch = table.getEntry("Pitch");
     pitch.setDouble(getPitch());
-
-
-    // SmartDashboard.putNumber("Compass", compassHeading);
-
-    // SmartDashboard.putNumber("left distance", leftWheelDistance());
-    // SmartDashboard.putNumber("right distance", rightWheelDistance());
-
-    // SmartDashboard.putNumber("left velocity",
-    // m_leftFront.getSelectedSensorVelocity());
-    // SmartDashboard.putNumber("right velocity",
-    // m_rightFront.getSelectedSensorVelocity());
-
-    // SmartDashboard.putNumber("gyro", getAngle());
 
   }
 }
